@@ -9,6 +9,7 @@ Particle::Particle(Vector3 pos, Vector3 vel)
 
 Particle::~Particle()
 {
+	delete renderItem;
 }
 
 void Particle::integrate(double dt)

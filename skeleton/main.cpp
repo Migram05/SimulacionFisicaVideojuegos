@@ -10,7 +10,7 @@
 #include "Particle.h"
 #include <iostream>
 
-std::string display_text = "This is a test";
+std::string display_text = "Practica Sim. Fis. 3ºV Miguel Ramirez";
 
 
 using namespace physx;
