@@ -7,31 +7,25 @@
 #include "core.hpp"
 #include "RenderUtils.hpp"
 #include "callbacks.hpp"
-#include "Particle.h"
-#include <iostream>
+#include "Scene.h"
 
 std::string display_text = "Practica Sim. Fis. 3ºV Miguel Ramirez";
 
 
 using namespace physx;
+using namespace std;
 
 PxDefaultAllocator		gAllocator;
 PxDefaultErrorCallback	gErrorCallback;
-
 PxFoundation*			gFoundation = NULL;
 PxPhysics*				gPhysics	= NULL;
-
-
 PxMaterial*				gMaterial	= NULL;
-
 PxPvd*                  gPvd        = NULL;
-
 PxDefaultCpuDispatcher*	gDispatcher = NULL;
 PxScene*				gScene      = NULL;
 ContactReportCallback gContactReportCallback;
 
-//Items
-Particle* p1;
+Scene* currentScene;
 
 // Initialize physics engine
 void initPhysics(bool interactive)
@@ -45,7 +39,7 @@ void initPhysics(bool interactive)
 	gPvd->connect(*transport,PxPvdInstrumentationFlag::eALL);
 
 	gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(),true,gPvd);
-
+	
 	gMaterial = gPhysics->createMaterial(0.5f, 0.5f, 0.6f);
 
 	// For Solid Rigids +++++++++++++++++++++++++++++++++++++
@@ -56,7 +50,7 @@ void initPhysics(bool interactive)
 	sceneDesc.filterShader = contactReportFilterShader;
 	sceneDesc.simulationEventCallback = &gContactReportCallback;
 	gScene = gPhysics->createScene(sceneDesc);
-	p1 = new Particle(Vector3(0,0,0), Vector3(1, 1, 0));
+	currentScene = new Scene();
 }
 
 
@@ -69,7 +63,7 @@ void stepPhysics(bool interactive, double t)
 
 	gScene->simulate(t);
 	gScene->fetchResults(true);
-	p1->integrate(t);
+	currentScene->integrate(t);
 }
 
 // Function to clean data
@@ -88,23 +82,18 @@ void cleanupPhysics(bool interactive)
 	transport->release();
 	
 	gFoundation->release();
-	}
+	delete currentScene;
+}
 
 // Function called when a key is pressed
 void keyPress(unsigned char key, const PxTransform& camera)
 {
 	PX_UNUSED(camera);
-
 	switch(toupper(key))
 	{
-	//case 'B': break;
-	//case ' ':	break;
-	case ' ':
-	{
-		break;
-	}
-	default:
-		break;
+		default:
+			currentScene->keyPress(key);
+			break;
 	}
 }
 
