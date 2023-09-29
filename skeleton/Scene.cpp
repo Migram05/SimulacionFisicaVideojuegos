@@ -17,7 +17,8 @@ void Scene::keyPress(unsigned char key)
 	switch(toupper(key)){
 		case ' ':
 		{
-			particlesList.push_back(new Particle(camera->getEye(), 25 * camera->getDir(), 25 * camera->getDir(), camera->getDir() * 5, 12, 0.98, 5));
+			particleInfo pI = { camera->getEye(), camera->getDir(), camera->getDir(), 0.98, 5, particleType::pT_Bullet };
+			particlesList.push_back(new Particle(pI));
 			break;
 		}
 	}
@@ -39,4 +40,6 @@ void Scene::integrate(float dt)
 	for (Particle* pt : particlesToDelete) {
 		delete pt;
 	}
+	particlesToDelete.clear();
 }
+

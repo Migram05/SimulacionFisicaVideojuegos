@@ -1,16 +1,17 @@
 #include "Particle.h"
 #include <iostream>
 
-Particle::Particle(Vector3 pos, Vector3 vel, Vector3 realVel, Vector3 acc, float m, float d = 0.98, float lT = 5) : velocity(vel), acceleration(acc), dumping(d), mass(m), lifeTime(lT)
+Particle::Particle(particleInfo pI) : lifeTime(pI.lifeTime), dumping(pI.dumping)
 {
-	pose = physx::PxTransform(pos.x, pos.y, pos.z); 
-	renderItem = new RenderItem(CreateShape(physx::PxSphereGeometry(1)), &pose, Vector4(1,0,0,1));
-	gravity = pow((vel.magnitude() / realVel.magnitude()), 2) * GRAVITY_VAL;
+	pose = physx::PxTransform(pI.origin.x, pI.origin.y, pI.origin.z);
+	setParticleValues(pI);
+	gravity = pow((velocity.magnitude() / realVelocity.magnitude()), 2) * GRAVITY_VAL;
+	mass = pow((realVelocity.magnitude() / velocity.magnitude()), 2) * realMass;
 }
 
 Particle::~Particle()
 {
-	delete renderItem;
+	renderItem->release();
 }
 
 void Particle::integrate(double dt)
@@ -25,4 +26,20 @@ void Particle::integrate(double dt)
 bool Particle::checkAlive()
 {
 	return timeAlive < lifeTime;
+}
+
+void Particle::setParticleValues(const particleInfo i)
+{
+	switch (i.type) {
+	case pT_Bullet: 
+	{
+		velocity = i.velocity * 25;
+		realVelocity = i.velocity * 25;
+		acceleration = i.acceleration * 5;
+		renderItem = new RenderItem(CreateShape(physx::PxSphereGeometry(1)), &pose, Vector4(1, 0, 0, 1));
+		break;
+	}
+	default: break;
+
+	}
 }
