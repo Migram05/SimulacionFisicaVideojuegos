@@ -4,7 +4,7 @@
 #define GRAVITY_VAL  -9.8;
 
 enum particleType {
-	pT_Bullet
+	pT_Bullet, pT_Cannon
 };
 
 struct particleInfo

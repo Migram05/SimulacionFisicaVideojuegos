@@ -1,24 +1,40 @@
 #include "Scene.h"
-#include "Particle.h"
 #include <iostream>
 
 Scene::Scene()
 {
 	camera = GetCamera();
+	spawnParticleInfo = { camera->getEye(), camera->getDir(), camera->getDir(), 0.98, 555, particleType::pT_Cannon };
+	ground = new RenderItem(CreateShape(physx::PxBoxGeometry(5000,1,5000)), Vector4(0, 1, 0, 1));
+	
 }
 
 Scene::~Scene()
 {
 	for (Particle* p : particlesList) delete p;
+	particlesList.clear();
+	for (Particle* pt : particlesToDelete) delete pt;
+	particlesToDelete.clear();
 }
 
 void Scene::keyPress(unsigned char key)
 {
 	switch(toupper(key)){
+		case '1':
+		{
+			spawnParticleInfo.type = pT_Cannon;
+			break;
+		}
+		case '2':
+		{
+			spawnParticleInfo.type = pT_Bullet;
+			break;
+		}
 		case ' ':
 		{
-			particleInfo pI = { camera->getEye(), camera->getDir(), camera->getDir(), 0.98, 5, particleType::pT_Bullet };
-			particlesList.push_back(new Particle(pI));
+			spawnParticleInfo.velocity = spawnParticleInfo.acceleration = camera->getDir();
+			spawnParticleInfo.origin = camera->getEye();
+			particlesList.push_back(new Particle(spawnParticleInfo));
 			break;
 		}
 	}
