@@ -21,7 +21,6 @@ void Particle::integrate(double dt)
 	pose.p += velocity * dt;
 	velocity += acceleration * dt;
 	velocity *= powf(dumping, dt);
-	std::cout << pose.p.y << std::endl;
 }
 
 bool Particle::checkAlive()
@@ -36,14 +35,16 @@ void Particle::setParticleValues(const particleInfo i)
 	{
 		velocity = i.velocity * 25;
 		realVelocity = i.velocity * 250;
-		renderItem = new RenderItem(CreateShape(physx::PxSphereGeometry(1)), &pose, Vector4(1, 0, 0, 1));
+		shape = CreateShape(physx::PxSphereGeometry(1));
+		renderItem = new RenderItem(shape, &pose, Vector4(1, 0, 0, 1));
 		break;
 	}
 	case pT_Bullet: 
 	{
 		velocity = i.velocity * 33;
 		realVelocity = i.velocity * 330;
-		renderItem = new RenderItem(CreateShape(physx::PxSphereGeometry(1)), &pose, Vector4(0, 0, 1, 1));
+		shape = CreateShape(physx::PxSphereGeometry(0.5));
+		renderItem = new RenderItem(shape, &pose, Vector4(0, 0, 1, 1));
 		break;
 	}
 	default: break;

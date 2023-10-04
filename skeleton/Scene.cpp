@@ -6,15 +6,12 @@ Scene::Scene()
 	camera = GetCamera();
 	spawnParticleInfo = { camera->getEye(), camera->getDir(), camera->getDir(), 0.98, 555, particleType::pT_Cannon };
 	ground = new RenderItem(CreateShape(physx::PxBoxGeometry(5000,1,5000)), Vector4(0, 1, 0, 1));
-	
 }
 
 Scene::~Scene()
 {
 	for (Particle* p : particlesList) delete p;
-	particlesList.clear();
 	for (Particle* pt : particlesToDelete) delete pt;
-	particlesToDelete.clear();
 }
 
 void Scene::keyPress(unsigned char key)

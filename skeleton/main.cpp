@@ -73,6 +73,7 @@ void cleanupPhysics(bool interactive)
 	PX_UNUSED(interactive);
 
 	// Rigid Body ++++++++++++++++++++++++++++++++++++++++++
+	delete currentScene;
 	gScene->release();
 	gDispatcher->release();
 	// -----------------------------------------------------
@@ -82,7 +83,6 @@ void cleanupPhysics(bool interactive)
 	transport->release();
 	
 	gFoundation->release();
-	delete currentScene;
 }
 
 // Function called when a key is pressed

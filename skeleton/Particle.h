@@ -34,6 +34,7 @@ private:
 	float timeAlive = 0, lifeTime;
 	const float dumping;
 	physx::PxTransform pose;
+	physx::PxShape* shape;
 	RenderItem* renderItem;
 };
 
