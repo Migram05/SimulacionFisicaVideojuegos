@@ -15,7 +15,7 @@ Particle::~Particle()
 	renderItem->release();
 }
 
-void Particle::integrate(double dt)
+void Particle::integrate(double dt) //Calculos de velocidad 
 {
 	timeAlive += dt;
 	pose.p += velocity * dt;
@@ -25,11 +25,12 @@ void Particle::integrate(double dt)
 
 bool Particle::checkAlive()
 {
-	return (timeAlive < lifeTime && pose.p.y > 0);
+	return (timeAlive < lifeTime && pose.p.y > 0); //Comprueba que todavía le queda tiempo de vida y que no ha tocado el suelo
 }
 
 void Particle::setParticleValues(const particleInfo i)
 {
+	//Según el tipo de partícula que queramos se cambian valores de velocidad, color y forma...
 	switch (i.type) {
 	case pT_Cannon: 
 	{

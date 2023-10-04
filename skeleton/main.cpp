@@ -50,7 +50,7 @@ void initPhysics(bool interactive)
 	sceneDesc.filterShader = contactReportFilterShader;
 	sceneDesc.simulationEventCallback = &gContactReportCallback;
 	gScene = gPhysics->createScene(sceneDesc);
-	currentScene = new Scene();
+	currentScene = new Scene(); //Creación de la escena
 }
 
 
@@ -73,7 +73,7 @@ void cleanupPhysics(bool interactive)
 	PX_UNUSED(interactive);
 
 	// Rigid Body ++++++++++++++++++++++++++++++++++++++++++
-	delete currentScene;
+	delete currentScene; //Se borra nuestra escena
 	gScene->release();
 	gDispatcher->release();
 	// -----------------------------------------------------
@@ -92,7 +92,7 @@ void keyPress(unsigned char key, const PxTransform& camera)
 	switch(toupper(key))
 	{
 		default:
-			currentScene->keyPress(key);
+			currentScene->keyPress(key); //Se llama al método key press de la escena
 			break;
 	}
 }
