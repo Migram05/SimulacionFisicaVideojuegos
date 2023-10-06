@@ -1,7 +1,7 @@
 #include "Particle.h"
 #include <iostream>
 
-Particle::Particle(particleInfo pI) : lifeTime(pI.lifeTime), dumping(pI.dumping)
+Particle::Particle(particleInfo pI) : lifeTime(pI.lifeTime), dumping(pI.dumping), origin(pI.origin), maxDistance(pI.maxDistance)
 {
 	pose = physx::PxTransform(pI.origin.x, pI.origin.y, pI.origin.z);
 	setParticleValues(pI);
@@ -25,7 +25,8 @@ void Particle::integrate(double dt) //Calculos de velocidad
 
 bool Particle::checkAlive()
 {
-	return (timeAlive < lifeTime && pose.p.y > 0); //Comprueba que todavía le queda tiempo de vida y que no ha tocado el suelo
+	//Comprueba que todavía le queda tiempo de vida y que no ha tocado el suelo y que no está demasiado lejos del origen
+	return (timeAlive < lifeTime && pose.p.y > 0 && (pose.p - origin).magnitude() <= maxDistance);
 }
 
 void Particle::setParticleValues(const particleInfo i)
@@ -34,7 +35,7 @@ void Particle::setParticleValues(const particleInfo i)
 	switch (i.type) {
 	case pT_Cannon: 
 	{
-		velocity = i.velocity * 25;
+		velocity = i.velocity * 125;
 		realVelocity = i.velocity * 250;
 		shape = CreateShape(physx::PxSphereGeometry(1));
 		renderItem = new RenderItem(shape, &pose, Vector4(1, 0, 0, 1));
@@ -42,10 +43,25 @@ void Particle::setParticleValues(const particleInfo i)
 	}
 	case pT_Bullet: 
 	{
-		velocity = i.velocity * 33;
-		realVelocity = i.velocity * 330;
+		velocity = i.velocity * 170;
+		realVelocity = i.velocity * 340;
 		shape = CreateShape(physx::PxSphereGeometry(0.5));
 		renderItem = new RenderItem(shape, &pose, Vector4(0, 0, 1, 1));
+		break;
+	}
+	case pT_Spark:
+	{
+		velocity = i.velocity * 10;
+		realVelocity = i.velocity * 10;
+		shape = CreateShape(physx::PxSphereGeometry(0.1));
+		renderItem = new RenderItem(shape, &pose, i.color);
+		break;
+	}
+	case pT_custom:
+	{
+		velocity = realVelocity = i.velocity;
+		shape = CreateShape(*i.geometry);
+		renderItem = new RenderItem(shape, &pose, i.color);
 		break;
 	}
 	default: break;

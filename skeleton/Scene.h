@@ -3,6 +3,7 @@
 #include <list>
 #include "RenderUtils.hpp"
 #include "Particle.h"
+#include "ParticleSystem.h"
 
 using namespace std;
 using namespace physx;
@@ -10,9 +11,11 @@ using namespace physx;
 class Scene
 {
 	class Camera* camera;
-	list<class Particle*> particlesList;
-	list<class Particle*> particlesToDelete;
+	list<Particle*> particlesList;
+	list<Particle*> particlesToDelete;
+	int maxParticleCount = 5;
 	particleInfo spawnParticleInfo;
+	ParticleSystem* pSystem;
 	RenderItem* ground;
 public:
 	Scene();
