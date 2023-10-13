@@ -9,7 +9,7 @@ Scene::Scene()
 	//Suelo
 	ground = new RenderItem(CreateShape(physx::PxBoxGeometry(5000,1,5000)), Vector4(0, 1, 0, 1));
 	
-	pSystem = new ParticleSystem(Vector3(0, 40, 0), Vector3(0, 1, 0));
+	pSystem = new ParticleSystem(Vector3(0, 40, 0), Vector3(0, -1, 0));
 }
 
 Scene::~Scene()

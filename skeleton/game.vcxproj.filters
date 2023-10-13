@@ -13,6 +13,9 @@
     <ClCompile Include="Particle.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ParticleSystem.cpp" />
+    <ClCompile Include="ParticleGenerator.cpp" />
+    <ClCompile Include="GaussianParticleGenerator.cpp" />
+    <ClCompile Include="UniformParticleGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core.hpp" />
@@ -27,6 +30,9 @@
     <ClInclude Include="Particle.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ParticleSystem.h" />
+    <ClInclude Include="ParticleGenerator.h" />
+    <ClInclude Include="GaussianParticleGenerator.h" />
+    <ClInclude Include="UniformParticleGenerator.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Render">

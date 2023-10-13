@@ -17,7 +17,8 @@ private:
 	Vector3 direction;
 	list<Particle*> particlesList;
 	list<Particle*> particlesToDeleteList;
-	int maxNum = 300;
+	list<class ParticleGenerator*> particleGeneratorList;
+	int maxNum = 1000;
 	particleInfo pInfo;
 };
 

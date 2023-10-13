@@ -1,23 +1,28 @@
 #include "ParticleSystem.h"
 #include <random>
 #include <iostream>
+#include <string>
+#include "ParticleGenerator.h"
+#include "GaussianParticleGenerator.h"
+#include "UniformParticleGenerator.h"
 
 ParticleSystem::ParticleSystem(Vector3 p, Vector3 d) : position(p), direction(d)
 {
-	pInfo = { p, d, Vector3(0,-9.8,0), 0.98, 10, 20, pT_Spark, Vector4(1,1,0,1), &physx::PxSphereGeometry(1)};
+	pInfo = { p, d, Vector3(0,1,0), 0.98, 10, 100, pT_Spark, Vector4(1,1,0,1), &physx::PxSphereGeometry(1)};
+	particleGeneratorList.push_back(new UniformParticleGenerator("G1",position, direction, pInfo));
 }
 
 ParticleSystem::~ParticleSystem()
 {
 	for (Particle* p : particlesList) delete p;
 	for (Particle* pt : particlesToDeleteList) delete pt;
+	for (ParticleGenerator* pG : particleGeneratorList) delete pG;
 }
 
 void ParticleSystem::integrate(double dt)
 {
-	if (particlesList.size() <= maxNum) {
-		pInfo.velocity = direction + Vector3(((std::rand() % 201) - 100) / 15, ((std::rand() % 201) - 100) / 15, ((std::rand() % 201) - 100) / 15);
-		particlesList.push_back(new Particle(pInfo));
+	for (auto pG : particleGeneratorList) {
+		if (particlesList.size() <= maxNum) particlesList.merge(pG->generateParticles(1));
 	}
 	list<Particle*>::iterator it = particlesList.begin();
 	Particle* p;
