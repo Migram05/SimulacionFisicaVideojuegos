@@ -11,10 +11,14 @@ protected:
 	Vector3 position;
 	Vector3 velocity;
 	particleInfo pModel;
+	bool oneTime = false; bool alreadyGenerated = false;
+	int numParticles;
 public:
-	ParticleGenerator(string name, Vector3 pos, Vector3 vel, particleInfo model);
+	ParticleGenerator(string name, Vector3 pos, Vector3 vel, particleInfo model, int nParticles, bool oneTime);
 	~ParticleGenerator();
 	void setParticle(particleInfo model);
-	virtual list<Particle*> generateParticles(int n) = 0;
+	void setPosition(Vector3 pos);
+	bool shouldDestroy();
+	virtual list<Particle*> generateParticles() = 0;
 };
 

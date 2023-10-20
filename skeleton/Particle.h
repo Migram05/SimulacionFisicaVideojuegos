@@ -23,11 +23,11 @@ struct particleInfo
 class Particle
 {
 public:
-	Particle(particleInfo pI);
-	~Particle();
+	Particle(particleInfo pI, class ParticleGenerator* = nullptr);
+	virtual ~Particle();
 	void integrate(double dt);
 	bool checkAlive();
-private:
+protected:
 	void setParticleValues(const particleInfo i);
 	Vector3 velocity;
 	Vector3 origin;
@@ -41,5 +41,13 @@ private:
 	physx::PxTransform pose;
 	physx::PxShape* shape;
 	RenderItem* renderItem;
+	class ParticleGenerator* generator;
+};
+
+class Firework : public Particle 
+{
+public:
+	Firework(particleInfo pI, class ParticleGenerator*);
+	~Firework();
 };
 

@@ -8,8 +8,8 @@
 
 ParticleSystem::ParticleSystem(Vector3 p, Vector3 d) : position(p), direction(d)
 {
-	pInfo = { p, d, Vector3(0,1,0), 0.98, 10, 100, pT_Spark, Vector4(1,1,0,1), &physx::PxSphereGeometry(1)};
-	particleGeneratorList.push_back(new UniformParticleGenerator("G1",position, direction, pInfo));
+	pInfo = { p, d, Vector3(0,1,0), 0.98, 10, 100, pT_Spark, Vector4(0,0,1,1), &physx::PxSphereGeometry(1)};
+	particleGeneratorList.push_back(new GaussianParticleGenerator("G1", position, direction, pInfo, 100, true));
 }
 
 ParticleSystem::~ParticleSystem()
@@ -21,8 +21,16 @@ ParticleSystem::~ParticleSystem()
 
 void ParticleSystem::integrate(double dt)
 {
-	for (auto pG : particleGeneratorList) {
-		if (particlesList.size() <= maxNum) particlesList.merge(pG->generateParticles(1));
+	list<ParticleGenerator*>::iterator itPG = particleGeneratorList.begin();
+	ParticleGenerator* pG;
+	while (itPG != particleGeneratorList.end()) { //Se actualizan los generadores
+		pG = *itPG;
+		particlesList.splice(particlesList.end(), pG->generateParticles()); //Se añaden las partículas generadas al generador
+		if (pG->shouldDestroy()) { //Los generadores que solo tienen que crear 1 vez se destruyen
+			particlesGeneratorsToDeleteList.push_back(pG);
+			itPG = particleGeneratorList.erase(itPG);
+		}
+		else ++itPG;
 	}
 	list<Particle*>::iterator it = particlesList.begin();
 	Particle* p;
@@ -39,4 +47,13 @@ void ParticleSystem::integrate(double dt)
 		delete pt;
 	}
 	particlesToDeleteList.clear();
+	for (ParticleGenerator* pG : particlesGeneratorsToDeleteList) { //Se borran los generadores pendientes de destruir
+		delete pG;
+	}
+	particlesGeneratorsToDeleteList.clear();
+}
+
+void ParticleSystem::addGenerator(ParticleGenerator* pG)
+{
+	particleGeneratorList.push_back(pG);
 }

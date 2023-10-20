@@ -15,7 +15,7 @@ class Scene
 	list<Particle*> particlesToDelete;
 	int maxParticleCount = 5;
 	particleInfo spawnParticleInfo;
-	ParticleSystem* pSystem;
+	vector< ParticleSystem*> pSystem;
 	RenderItem* ground;
 public:
 	Scene();

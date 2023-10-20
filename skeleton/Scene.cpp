@@ -1,5 +1,7 @@
 #include "Scene.h"
 #include <iostream>
+#include "GaussianParticleGenerator.h"
+#include "UniformParticleGenerator.h"
 
 Scene::Scene()
 {
@@ -9,14 +11,14 @@ Scene::Scene()
 	//Suelo
 	ground = new RenderItem(CreateShape(physx::PxBoxGeometry(5000,1,5000)), Vector4(0, 1, 0, 1));
 	
-	pSystem = new ParticleSystem(Vector3(0, 40, 0), Vector3(0, -1, 0));
+	pSystem.push_back(new ParticleSystem(Vector3(0, 40, 0), Vector3(0, 1, 0)));
 }
 
 Scene::~Scene()
 {
 	for (Particle* p : particlesList) delete p;
 	for (Particle* pt : particlesToDelete) delete pt;
-	delete pSystem;
+	for (ParticleSystem* pS : pSystem) delete pS;
 }
 
 void Scene::keyPress(unsigned char key)
@@ -38,6 +40,7 @@ void Scene::keyPress(unsigned char key)
 			//Se actualizan los valores de posición y dirección de la cámara para la creación del proyectil
 			spawnParticleInfo.velocity = spawnParticleInfo.acceleration = camera->getDir();
 			spawnParticleInfo.origin = camera->getEye();
+			spawnParticleInfo.lifeTime = 1;
 			particlesList.push_back(new Particle(spawnParticleInfo));
 			break;
 		}
@@ -57,7 +60,8 @@ void Scene::integrate(float dt)
 		}
 		else ++it;
 	}
-	pSystem->integrate(dt);
+	for(auto pS : pSystem) pS->integrate(dt);
+
 	for (Particle* pt : particlesToDelete) { //Se borran las partículas pendientes de destruir
 		delete pt;
 	}

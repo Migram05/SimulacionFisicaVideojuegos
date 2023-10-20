@@ -8,8 +8,8 @@ class GaussianParticleGenerator : public ParticleGenerator
 {
 
 public:
-    GaussianParticleGenerator(string name, Vector3 pos, Vector3 vel, particleInfo model);
+    GaussianParticleGenerator(string name, Vector3 pos, Vector3 vel, particleInfo model, int nParticles, bool oneT = false);
     ~GaussianParticleGenerator();
-    list<Particle*> generateParticles(int n) override;
+    list<Particle*> generateParticles() override;
 };
 

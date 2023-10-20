@@ -1,6 +1,6 @@
 #include "UniformParticleGenerator.h"
 
-UniformParticleGenerator::UniformParticleGenerator(string name, Vector3 pos, Vector3 vel, particleInfo model) : ParticleGenerator(name, pos, vel, model)
+UniformParticleGenerator::UniformParticleGenerator(string name, Vector3 pos, Vector3 vel,int maxDim,Vector3 shape, particleInfo model, int nP, bool oneT) : ParticleGenerator(name, pos, vel, model, nP, oneT), maxDimension(maxDim), shape(shape)
 {
 }
 
@@ -8,17 +8,15 @@ UniformParticleGenerator::~UniformParticleGenerator()
 {
 }
 
-list<Particle*> UniformParticleGenerator::generateParticles(int n)
+list<Particle*> UniformParticleGenerator::generateParticles()
 {
+	alreadyGenerated = true;
 	list<Particle*> pL;
 	unsigned seed = (rand() % 1001) - 1000;
 	std::default_random_engine generator(seed);
-	std::uniform_int_distribution<> distribution(1, 10);
-	for (int i = 0; i < n; ++i) {
-		//pModel.velocity = velocity + Vector3(((std::rand() % 201) - 100) / 15, ((std::rand() % 201) - 100) / 15, ((std::rand() % 201) - 100) / 15);
-		pModel.origin = position + Vector3(distribution(generator), 0, distribution(generator));
-		//pModel.velocity = velocity + Vector3(0, 0, 0);
-		pModel.color = { 0,0,1,0 };
+	std::uniform_int_distribution<> distribution(0,maxDimension);
+	for (int i = 0; i < numParticles; ++i) {
+		pModel.origin = position + Vector3(distribution(generator)*shape.x, distribution(generator) * shape.y, distribution(generator) * shape.z);
 		pL.push_back(new Particle(pModel));
 	}
 	return pL;

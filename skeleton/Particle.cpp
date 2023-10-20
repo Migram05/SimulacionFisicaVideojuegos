@@ -1,7 +1,8 @@
 #include "Particle.h"
+#include "ParticleGenerator.h"
 #include <iostream>
 
-Particle::Particle(particleInfo pI) : lifeTime(pI.lifeTime), dumping(pI.dumping), origin(pI.origin), maxDistance(pI.maxDistance), acceleration(pI.acceleration), velocity(pI.velocity)
+Particle::Particle(particleInfo pI, ParticleGenerator* pG) : lifeTime(pI.lifeTime), dumping(pI.dumping), origin(pI.origin), maxDistance(pI.maxDistance), acceleration(pI.acceleration), velocity(pI.velocity), generator(pG)
 {
 	pose = physx::PxTransform(pI.origin.x, pI.origin.y, pI.origin.z);
 	setParticleValues(pI);
@@ -66,5 +67,17 @@ void Particle::setParticleValues(const particleInfo i)
 	}
 	default: break;
 
+	}
+}
+
+Firework::Firework(particleInfo pI, ParticleGenerator* pG) : Particle(pI, pG)
+{
+}
+
+Firework::~Firework()
+{
+	if (generator) {
+		//generator->setPosition(pose.p);
+		//generator->generateParticles(50);
 	}
 }
