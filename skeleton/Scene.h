@@ -16,6 +16,7 @@ class Scene
 	int maxParticleCount = 5;
 	particleInfo spawnParticleInfo;
 	vector< ParticleSystem*> pSystem;
+	ParticleSystem* fireworkPS;
 	RenderItem* ground;
 public:
 	Scene();

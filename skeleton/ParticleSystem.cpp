@@ -8,8 +8,6 @@
 
 ParticleSystem::ParticleSystem(Vector3 p, Vector3 d) : position(p), direction(d)
 {
-	pInfo = { p, d, Vector3(0,1,0), 0.98, 10, 100, pT_Spark, Vector4(0,0,1,1), &physx::PxSphereGeometry(1)};
-	particleGeneratorList.push_back(new GaussianParticleGenerator("G1", position, direction, pInfo, 100, true));
 }
 
 ParticleSystem::~ParticleSystem()
@@ -25,12 +23,11 @@ void ParticleSystem::integrate(double dt)
 	ParticleGenerator* pG;
 	while (itPG != particleGeneratorList.end()) { //Se actualizan los generadores
 		pG = *itPG;
-		particlesList.splice(particlesList.end(), pG->generateParticles()); //Se añaden las partículas generadas al generador
-		if (pG->shouldDestroy()) { //Los generadores que solo tienen que crear 1 vez se destruyen
-			particlesGeneratorsToDeleteList.push_back(pG);
-			itPG = particleGeneratorList.erase(itPG);
+		if (pG->shouldGenerate()) {
+			pG->generateParticles();
 		}
-		else ++itPG;
+		particlesList.splice(particlesList.end(), pG->getGeneratedParticles()); //Se añaden las partículas generadas al generador
+		++itPG;
 	}
 	list<Particle*>::iterator it = particlesList.begin();
 	Particle* p;

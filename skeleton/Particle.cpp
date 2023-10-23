@@ -7,6 +7,7 @@ Particle::Particle(particleInfo pI, ParticleGenerator* pG) : lifeTime(pI.lifeTim
 	pose = physx::PxTransform(pI.origin.x, pI.origin.y, pI.origin.z);
 	setParticleValues(pI);
 	gravity = pow((velocity.magnitude() / realVelocity.magnitude()), 2) * GRAVITY_VAL;
+	if (gravity == 0) gravity = GRAVITY_VAL;
 	mass = pow((realVelocity.magnitude() / velocity.magnitude()), 2) * realMass;
 	acceleration = Vector3(acceleration.x, gravity * acceleration.y, acceleration.z);
 }
@@ -61,7 +62,7 @@ void Particle::setParticleValues(const particleInfo i)
 	case pT_custom:
 	{
 		velocity = realVelocity = i.velocity;
-		shape = CreateShape(*i.geometry);
+		shape = i.geometry;
 		renderItem = new RenderItem(shape, &pose, i.color);
 		break;
 	}
@@ -77,7 +78,22 @@ Firework::Firework(particleInfo pI, ParticleGenerator* pG) : Particle(pI, pG)
 Firework::~Firework()
 {
 	if (generator) {
-		//generator->setPosition(pose.p);
-		//generator->generateParticles(50);
+		generator->setPosition(pose.p);
+		particleInfo pInfo; 
+		pInfo.type = pT_custom;
+		pInfo.color = { (float)(rand() % 2),(float)(rand() % 2),(float)(rand() % 2),1 };
+		pInfo.geometry = CreateShape(physx::PxSphereGeometry(0.5));
+		pInfo.lifeTime = 3;
+		pInfo.origin = pose.p;
+		pInfo.acceleration = { 0,1,0 };
+		pInfo.dumping = 0.98;
+		pInfo.maxDistance = 100;
+		for (int i = 0; i < 50; i++) {
+			pInfo.velocity = { (float)(rand()%15) -15,(float)(rand() % 20),(float)(rand() % 15) - 15 };
+			generator->setNumparticles(1);
+			generator->setParticle(pInfo);
+			generator->generateParticles();
+		}
+		
 	}
 }

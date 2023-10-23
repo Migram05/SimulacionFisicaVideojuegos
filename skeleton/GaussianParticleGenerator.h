@@ -6,10 +6,11 @@
 using namespace std;
 class GaussianParticleGenerator : public ParticleGenerator
 {
-
+private:
+    float maxDimension;
 public:
-    GaussianParticleGenerator(string name, Vector3 pos, Vector3 vel, particleInfo model, int nParticles, bool oneT = false);
+    GaussianParticleGenerator(string name, Vector3 pos, Vector3 vel, particleInfo model, float maxDim, int nParticles, bool oneT = false);
     ~GaussianParticleGenerator();
-    list<Particle*> generateParticles() override;
+    void generateParticles() override;
 };
 

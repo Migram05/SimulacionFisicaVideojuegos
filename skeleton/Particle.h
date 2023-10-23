@@ -17,7 +17,7 @@ struct particleInfo
 	float maxDistance;
 	particleType type;
 	Vector4 color;
-	physx::PxGeometry* geometry;
+	physx::PxShape* geometry;
 };
 
 class Particle
