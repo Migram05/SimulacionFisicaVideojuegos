@@ -2,7 +2,7 @@
 #include "ParticleGenerator.h"
 #include <iostream>
 
-Particle::Particle(particleInfo pI, ParticleGenerator* pG) : lifeTime(pI.lifeTime), dumping(pI.dumping), origin(pI.origin), maxDistance(pI.maxDistance), acceleration(pI.acceleration), velocity(pI.velocity), generator(pG)
+Particle::Particle(particleInfo pI, ParticleGenerator* pG) : lifeTime(pI.lifeTime), dumping(pI.dumping), origin(pI.origin), maxDistance(pI.maxDistance), acceleration(pI.acceleration), velocity(pI.velocity), generator(pG), generateOnDestroy(pI.destroySpawn), generateNum(pI.destroySpawnNum)
 {
 	pose = physx::PxTransform(pI.origin.x, pI.origin.y, pI.origin.z);
 	setParticleValues(pI);
@@ -10,10 +10,25 @@ Particle::Particle(particleInfo pI, ParticleGenerator* pG) : lifeTime(pI.lifeTim
 	if (gravity == 0) gravity = GRAVITY_VAL;
 	mass = pow((realVelocity.magnitude() / velocity.magnitude()), 2) * realMass;
 	acceleration = Vector3(acceleration.x, gravity * acceleration.y, acceleration.z);
+	pInfoCopy = pI;
 }
 
 Particle::~Particle()
 {
+	if (generator && generateOnDestroy) {
+		generator->setPosition(pose.p);
+		particleInfo copy = pInfoCopy;
+		copy.type = pT_custom;
+		copy.destroySpawn = false;
+		copy.color = { 1,0,0,1 };
+		for (int i = 0; i < generateNum; i++) {
+			copy.lifeTime = rand() % 5 + 1;
+			copy.velocity = { (float)(rand() % 15) - 15,(float)(rand() % 20),(float)(rand() % 15) - 15 };
+			generator->setNumparticles(1);
+			generator->setParticle(copy);
+			generator->generateParticles();
+		}
+	}
 	renderItem->release();
 }
 
@@ -83,17 +98,17 @@ Firework::~Firework()
 		pInfo.type = pT_custom;
 		pInfo.color = { (float)(rand() % 2),(float)(rand() % 2),(float)(rand() % 2),1 };
 		pInfo.geometry = CreateShape(physx::PxSphereGeometry(0.5));
-		pInfo.lifeTime = 3;
-		pInfo.origin = pose.p;
 		pInfo.acceleration = { 0,1,0 };
+		pInfo.destroySpawn = true;
+		pInfo.destroySpawnNum = 5;
 		pInfo.dumping = 0.98;
 		pInfo.maxDistance = 100;
 		for (int i = 0; i < 50; i++) {
+			pInfo.lifeTime = rand()%5 + 1;
 			pInfo.velocity = { (float)(rand()%15) -15,(float)(rand() % 20),(float)(rand() % 15) - 15 };
 			generator->setNumparticles(1);
 			generator->setParticle(pInfo);
 			generator->generateParticles();
 		}
-		
 	}
 }

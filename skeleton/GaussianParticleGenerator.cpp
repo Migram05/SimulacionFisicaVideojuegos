@@ -18,6 +18,6 @@ void GaussianParticleGenerator::generateParticles()
 	for (int i = 0; i < numParticles; ++i) {
 		//pModel.velocity = velocity + Vector3(((std::rand() % 201) - 100) / 15, ((std::rand() % 201) - 100) / 15, ((std::rand() % 201) - 100) / 15);
 		pModel.origin = position + Vector3(distribution(generator), distribution(generator), distribution(generator) );
-		pL.push_back(new Particle(pModel));
+		pL.push_back(new Particle(pModel, this));
 	}
 }

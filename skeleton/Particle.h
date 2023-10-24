@@ -18,6 +18,8 @@ struct particleInfo
 	particleType type;
 	Vector4 color;
 	physx::PxShape* geometry;
+	bool destroySpawn = false;
+	int destroySpawnNum;
 };
 
 class Particle
@@ -37,6 +39,9 @@ protected:
 	float gravity;
 	float maxDistance;
 	float timeAlive = 0, lifeTime;
+	bool generateOnDestroy;
+	particleInfo pInfoCopy;
+	int generateNum;
 	const float dumping;
 	physx::PxTransform pose;
 	physx::PxShape* shape;
