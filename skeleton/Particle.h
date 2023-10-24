@@ -11,9 +11,9 @@ struct particleInfo
 {
 	Vector3 origin;
 	Vector3 velocity;
-	Vector3 acceleration;
-	float dumping;
-	float lifeTime;
+	Vector3 acceleration = { 0,1,0 };
+	float dumping = 0.98;
+	float lifeTime = 2;
 	float maxDistance;
 	particleType type;
 	Vector4 color;
@@ -51,8 +51,10 @@ protected:
 
 class Firework : public Particle 
 {
+private:
+	int type;
 public:
-	Firework(particleInfo pI, class ParticleGenerator*);
+	Firework(particleInfo pI, class ParticleGenerator*, int type = 1);
 	~Firework();
 };
 

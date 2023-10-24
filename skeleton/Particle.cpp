@@ -23,7 +23,7 @@ Particle::~Particle()
 		copy.color = { 1,0,0,1 };
 		for (int i = 0; i < generateNum; i++) {
 			copy.lifeTime = rand() % 5 + 1;
-			copy.velocity = { (float)(rand() % 15) - 15,(float)(rand() % 20),(float)(rand() % 15) - 15 };
+			copy.velocity = { (float)(rand() % 15) - 15,(float)(rand() % 5),(float)(rand() % 15) - 15 };
 			generator->setNumparticles(1);
 			generator->setParticle(copy);
 			generator->generateParticles();
@@ -86,28 +86,60 @@ void Particle::setParticleValues(const particleInfo i)
 	}
 }
 
-Firework::Firework(particleInfo pI, ParticleGenerator* pG) : Particle(pI, pG)
+Firework::Firework(particleInfo pI, ParticleGenerator* pG, int t) : Particle(pI, pG), type(t)
 {
 }
 
 Firework::~Firework()
 {
 	if (generator) {
-		generator->setPosition(pose.p);
-		particleInfo pInfo; 
+		particleInfo pInfo;
 		pInfo.type = pT_custom;
 		pInfo.color = { (float)(rand() % 2),(float)(rand() % 2),(float)(rand() % 2),1 };
 		pInfo.geometry = CreateShape(physx::PxSphereGeometry(0.5));
-		pInfo.acceleration = { 0,1,0 };
-		pInfo.destroySpawn = true;
 		pInfo.destroySpawnNum = 5;
-		pInfo.dumping = 0.98;
 		pInfo.maxDistance = 100;
-		for (int i = 0; i < 50; i++) {
-			pInfo.lifeTime = rand()%5 + 1;
-			pInfo.velocity = { (float)(rand()%15) -15,(float)(rand() % 20),(float)(rand() % 15) - 15 };
-			generator->setNumparticles(1);
+		if (type < 3) {
+			if (type == 2) pInfo.destroySpawn = true;
+			generator->setPosition(pose.p);
+			for (int i = 0; i < 50; i++) {
+				pInfo.lifeTime = rand() % 5 + 1;
+				pInfo.velocity = { (float)(rand() % 15) - 15,(float)(rand() % 20),(float)(rand() % 15) - 15 };
+				generator->setNumparticles(1);
+				generator->setParticle(pInfo);
+				generator->generateParticles();
+			}
+		}
+		else {
+			pInfo.lifeTime = 3;
+			pInfo.velocity = { 0,0,0 };
+			pInfo.dumping = 0.98;
 			generator->setParticle(pInfo);
+			generator->setNumparticles(1);
+			Vector3 eyesOffset(5, 10, 0);
+			Vector3 mouth1(5, -7, 0);
+			Vector3 mouth2(10, -5, 0);
+
+			Vector3 eye1 = pose.p + eyesOffset;
+			Vector3 eye2 (pose.p.x - eyesOffset.x, pose.p.y + eyesOffset.y, pose.p.z);
+			Vector3 m1 = pose.p + mouth1;
+			Vector3 m2 (pose.p.x - mouth1.x, pose.p.y + mouth1.y, pose.p.z);
+			Vector3 m4 = pose.p + mouth2;
+			Vector3 m5(pose.p.x - mouth2.x, pose.p.y + mouth2.y, pose.p.z);
+
+			generator->setPosition(eye1);
+			generator->generateParticles();
+			generator->setPosition(eye2);
+			generator->generateParticles();
+			generator->setPosition(m1);
+			generator->generateParticles();
+			generator->setPosition(m2);
+			generator->generateParticles();
+			generator->setPosition(m4);
+			generator->generateParticles();
+			generator->setPosition(m5);
+			generator->generateParticles();
+			generator->setPosition({pose.p.x, pose.p.y + mouth1.y, pose.p.z});
 			generator->generateParticles();
 		}
 	}
