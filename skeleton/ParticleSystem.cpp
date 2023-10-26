@@ -23,7 +23,7 @@ void ParticleSystem::integrate(double dt)
 	ParticleGenerator* pG;
 	while (itPG != particleGeneratorList.end()) { //Se actualizan los generadores
 		pG = *itPG;
-		if (pG->shouldGenerate()) {
+		if (pG->shouldGenerate()) { //Si un generador solo genera una vez, no se ejecuta la generación automática
 			pG->generateParticles();
 		}
 		particlesList.splice(particlesList.end(), pG->getGeneratedParticles()); //Se añaden las partículas generadas al generador

@@ -1,6 +1,6 @@
 #include "ParticleGenerator.h"
 
-ParticleGenerator::ParticleGenerator(string name, Vector3 pos, Vector3 vel, particleInfo model, int nParticles, bool oneT) : position(pos), velocity(vel), pModel(model), numParticles(nParticles), oneTime(oneT)
+ParticleGenerator::ParticleGenerator(string name, Vector3 pos, Vector3 vel, particleInfo model,float maxD, int nParticles, bool oneT) : position(pos), velocity(vel), pModel(model), numParticles(nParticles), oneTime(oneT), maxDispersion(maxD)
 {
 
 }
@@ -17,6 +17,11 @@ void ParticleGenerator::setParticle(particleInfo model)
 void ParticleGenerator::setPosition(Vector3 pos)
 {
 	position = pos;
+}
+
+void ParticleGenerator::setMaxDispersion(float newDispersion)
+{
+	maxDispersion = newDispersion;
 }
 
 bool ParticleGenerator::shouldGenerate()

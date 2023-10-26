@@ -20,7 +20,7 @@ private:
 	list<Particle*> particlesToDeleteList;
 	list<class ParticleGenerator*> particleGeneratorList;
 	list<class ParticleGenerator*> particlesGeneratorsToDeleteList;
-	int maxNum = 1000;
+	int maxNum = 10000;
 	particleInfo pInfo;
 };
 

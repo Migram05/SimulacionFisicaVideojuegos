@@ -15,15 +15,16 @@ Particle::Particle(particleInfo pI, ParticleGenerator* pG) : lifeTime(pI.lifeTim
 
 Particle::~Particle()
 {
+	//Si una partícula tiene asociado un generador y la propiedad de generar partículas al morir, cuando se destruya, generará partículas
 	if (generator && generateOnDestroy) {
 		generator->setPosition(pose.p);
 		particleInfo copy = pInfoCopy;
 		copy.type = pT_custom;
 		copy.destroySpawn = false;
-		copy.color = { 1,0,0,1 };
+		copy.color = { (float)(rand()%100)/100,(float)(rand() % 100) / 100,(float)(rand() % 100) / 100,1};
 		for (int i = 0; i < generateNum; i++) {
 			copy.lifeTime = rand() % 5 + 1;
-			copy.velocity = { (float)(rand() % 15) - 15,(float)(rand() % 5),(float)(rand() % 15) - 15 };
+			copy.velocity = { (float)(rand() % 16) - 8,(float)(rand() % 5),(float)(rand() % 16) - 8 };
 			generator->setNumparticles(1);
 			generator->setParticle(copy);
 			generator->generateParticles();
@@ -92,25 +93,29 @@ Firework::Firework(particleInfo pI, ParticleGenerator* pG, int t) : Particle(pI,
 
 Firework::~Firework()
 {
+	//Al destruirse genera partículas
 	if (generator) {
 		particleInfo pInfo;
 		pInfo.type = pT_custom;
 		pInfo.color = { (float)(rand() % 2),(float)(rand() % 2),(float)(rand() % 2),1 };
-		pInfo.geometry = CreateShape(physx::PxSphereGeometry(0.5));
+		pInfo.geometry = CreateShape(physx::PxSphereGeometry(0.15));
 		pInfo.destroySpawnNum = 5;
 		pInfo.maxDistance = 100;
+		pInfo.dumping = 0.1; //Le reducimos el dumping para que caigan más despacio
 		if (type < 3) {
-			if (type == 2) pInfo.destroySpawn = true;
+			if (type == 2) pInfo.destroySpawn = true; //Si son de tipo 2 lo ajustamos para que las partículas generen más partículas
 			generator->setPosition(pose.p);
-			for (int i = 0; i < 50; i++) {
+			for (int i = 0; i < 800; i++) { //Bucle de generación de partículas
 				pInfo.lifeTime = rand() % 5 + 1;
-				pInfo.velocity = { (float)(rand() % 15) - 15,(float)(rand() % 20),(float)(rand() % 15) - 15 };
+				pInfo.velocity = { (float)(rand() % 20) - 10,(float)(rand() % 20),(float)(rand() % 20) - 10 };
 				generator->setNumparticles(1);
 				generator->setParticle(pInfo);
 				generator->generateParticles();
 			}
+			generator->setMaxDispersion(0.1); 
 		}
-		else {
+		else {//Fuego artificial de una cara sonriente 
+			pInfo.geometry = CreateShape(physx::PxSphereGeometry(0.5));
 			pInfo.lifeTime = 3;
 			pInfo.velocity = { 0,0,0 };
 			pInfo.dumping = 0.98;

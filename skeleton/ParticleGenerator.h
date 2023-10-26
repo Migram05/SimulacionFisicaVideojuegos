@@ -13,12 +13,14 @@ protected:
 	particleInfo pModel;
 	bool oneTime = false; bool alreadyGenerated = false;
 	int numParticles;
+	float maxDispersion;
 	list<Particle*> pL;
 public:
-	ParticleGenerator(string name, Vector3 pos, Vector3 vel, particleInfo model, int nParticles, bool oneTime);
+	ParticleGenerator(string name, Vector3 pos, Vector3 vel, particleInfo model,float maxD, int nParticles, bool oneTime);
 	~ParticleGenerator();
 	void setParticle(particleInfo model);
 	void setPosition(Vector3 pos);
+	void setMaxDispersion(float newDispersion);
 	bool shouldGenerate();
 	void setNumparticles(int newNum);
 	virtual void generateParticles() = 0;
