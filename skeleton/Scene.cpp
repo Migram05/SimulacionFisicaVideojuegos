@@ -40,19 +40,15 @@ void Scene::keyPress(unsigned char key)
 			spawnParticleInfo.type = pT_custom; spawnParticleInfo.color = { 0,1,1,1 }; spawnParticleInfo.geometry = CreateShape(physx::PxSphereGeometry(1));
 			spawnParticleInfo.velocity = { 0,35,0 }; spawnParticleInfo.lifeTime = 3; spawnParticleInfo.acceleration = { 0,1,0 };
 			spawnParticleInfo.origin = { 10,40,10 };
-			ParticleGenerator* pG = new GaussianParticleGenerator("G1", { 0,30,0 }, { 0,1,0 }, spawnParticleInfo,5 , 0, true);
-			fireworkPS->addGenerator(pG);
-			particlesList.push_back(new Firework(spawnParticleInfo, pG));
+			particlesList.push_back(new Firework(spawnParticleInfo, fireworkPS));
 			break;
 		}
 		case '4':
 		{
 			spawnParticleInfo.type = pT_custom; spawnParticleInfo.color = { 0,0.2,0.5,1 }; spawnParticleInfo.geometry = CreateShape(physx::PxSphereGeometry(1));
 			spawnParticleInfo.velocity = { 0,35,0 }; spawnParticleInfo.lifeTime = 3; spawnParticleInfo.acceleration = { 0,1,0 };
-			spawnParticleInfo.origin = { 10,40,10 };
-			ParticleGenerator* pG = new GaussianParticleGenerator("G1", { 0,30,0 }, { 0,1,0 }, spawnParticleInfo, 5, 0, true);
-			fireworkPS->addGenerator(pG);
-			particlesList.push_back(new Firework(spawnParticleInfo, pG, 2));
+			spawnParticleInfo.origin = { 10,40,10 }; spawnParticleInfo.destroySpawnNum = 10;
+			particlesList.push_back(new Firework(spawnParticleInfo, fireworkPS, 2));
 			break;
 		}
 		case '5':
@@ -60,15 +56,14 @@ void Scene::keyPress(unsigned char key)
 			spawnParticleInfo.type = pT_custom; spawnParticleInfo.color = { 1,0.2,0.5,1 }; spawnParticleInfo.geometry = CreateShape(physx::PxSphereGeometry(1));
 			spawnParticleInfo.velocity = { 0,35,0 }; spawnParticleInfo.lifeTime = 3; spawnParticleInfo.acceleration = { 0,1,0 };
 			spawnParticleInfo.origin = { 10,40,10 };
-			ParticleGenerator* pG = new GaussianParticleGenerator("G1", { 0,30,0 }, { 0,1,0 }, spawnParticleInfo, 0.1, 0, true);
-			fireworkPS->addGenerator(pG);
-			particlesList.push_back(new Firework(spawnParticleInfo, pG, 3));
+			particlesList.push_back(new Firework(spawnParticleInfo, fireworkPS, 3));
 			break;
 		}
 		case ' ':
 		{
 			if (particlesList.size() > maxParticleCount) break;
 			//Se actualizan los valores de posición y dirección de la cámara para la creación del proyectil
+			//Esto no se utiliza para la práctica de los fuegos artificiales
 			spawnParticleInfo.velocity = spawnParticleInfo.acceleration = camera->getDir();
 			spawnParticleInfo.origin = camera->getEye();
 			spawnParticleInfo.lifeTime = 1;

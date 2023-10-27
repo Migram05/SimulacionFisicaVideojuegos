@@ -46,7 +46,8 @@ protected:
 	physx::PxTransform pose;
 	physx::PxShape* shape;
 	RenderItem* renderItem;
-	class ParticleGenerator* generator;
+	class ParticleGenerator* generator = nullptr;
+	class ParticleSystem* pSystem;
 };
 
 class Firework : public Particle 
@@ -54,7 +55,7 @@ class Firework : public Particle
 private:
 	int type;
 public:
-	Firework(particleInfo pI, class ParticleGenerator*, int type = 1);
+	Firework(particleInfo pI, class ParticleSystem*, int type = 1);
 	~Firework();
 };
 

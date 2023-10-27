@@ -23,11 +23,14 @@ void ParticleSystem::integrate(double dt)
 	ParticleGenerator* pG;
 	while (itPG != particleGeneratorList.end()) { //Se actualizan los generadores
 		pG = *itPG;
-		if (pG->shouldGenerate()) { //Si un generador solo genera una vez, no se ejecuta la generación automática
-			pG->generateParticles();
+		if (pG->shouldDestroy()) { //Si el generador solo tiene que generar 1 vez, se destruye 
+			particlesGeneratorsToDeleteList.push_back(pG);
+			itPG = particleGeneratorList.erase(itPG);
 		}
-		particlesList.splice(particlesList.end(), pG->getGeneratedParticles()); //Se añaden las partículas generadas al generador
-		++itPG;
+		else {
+			particlesList.splice(particlesList.end(), pG->generateParticles()); //Se añaden las partículas generadas al generador
+			++itPG;
+		}
 	}
 	list<Particle*>::iterator it = particlesList.begin();
 	Particle* p;

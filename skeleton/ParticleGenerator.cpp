@@ -1,8 +1,9 @@
 #include "ParticleGenerator.h"
+#include "ParticleSystem.h"
 
-ParticleGenerator::ParticleGenerator(string name, Vector3 pos, Vector3 vel, particleInfo model,float maxD, int nParticles, bool oneT) : position(pos), velocity(vel), pModel(model), numParticles(nParticles), oneTime(oneT), maxDispersion(maxD)
+ParticleGenerator::ParticleGenerator(ParticleSystem* parentSys, string name, Vector3 pos, particleInfo model,float maxD, int nParticles, bool oneT) : position(pos), pModel(model), numParticles(nParticles), oneTime(oneT), maxDispersion(maxD), parentSystem(parentSys)
 {
-
+	shouldDestroyItself = false;
 }
 
 ParticleGenerator::~ParticleGenerator()
@@ -24,9 +25,10 @@ void ParticleGenerator::setMaxDispersion(float newDispersion)
 	maxDispersion = newDispersion;
 }
 
-bool ParticleGenerator::shouldGenerate()
+
+bool ParticleGenerator::shouldDestroy()
 {
-	return (!oneTime && alreadyGenerated);
+	return shouldDestroyItself;
 }
 
 void ParticleGenerator::setNumparticles(int newNum)
@@ -34,10 +36,16 @@ void ParticleGenerator::setNumparticles(int newNum)
 	numParticles = newNum;
 }
 
+ParticleSystem* ParticleGenerator::getSystem()
+{
+	return parentSystem;
+}
+
 list<Particle*> ParticleGenerator::getGeneratedParticles()
 {
 	auto copy = pL;
 	pL.clear();
+	if (oneTime) shouldDestroyItself = true;
 	return copy;
 }
 

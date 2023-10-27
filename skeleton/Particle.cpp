@@ -1,5 +1,8 @@
 #include "Particle.h"
 #include "ParticleGenerator.h"
+#include "GaussianParticleGenerator.h"
+#include "UniformParticleGenerator.h"
+#include "ParticleSystem.h"
 #include <iostream>
 
 Particle::Particle(particleInfo pI, ParticleGenerator* pG) : lifeTime(pI.lifeTime), dumping(pI.dumping), origin(pI.origin), maxDistance(pI.maxDistance), acceleration(pI.acceleration), velocity(pI.velocity), generator(pG), generateOnDestroy(pI.destroySpawn), generateNum(pI.destroySpawnNum)
@@ -11,23 +14,23 @@ Particle::Particle(particleInfo pI, ParticleGenerator* pG) : lifeTime(pI.lifeTim
 	mass = pow((realVelocity.magnitude() / velocity.magnitude()), 2) * realMass;
 	acceleration = Vector3(acceleration.x, gravity * acceleration.y, acceleration.z);
 	pInfoCopy = pI;
+	if (pG != nullptr) pSystem = pG->getSystem();
 }
 
 Particle::~Particle()
 {
 	//Si una partícula tiene asociado un generador y la propiedad de generar partículas al morir, cuando se destruya, generará partículas
-	if (generator && generateOnDestroy) {
-		generator->setPosition(pose.p);
+	if (pSystem != nullptr && generateOnDestroy) {
 		particleInfo copy = pInfoCopy;
 		copy.type = pT_custom;
+		copy.lifeTime = (rand()%4) + 1;
 		copy.destroySpawn = false;
-		copy.color = { (float)(rand()%100)/100,(float)(rand() % 100) / 100,(float)(rand() % 100) / 100,1};
+		generator->setPosition(pose.p);
 		for (int i = 0; i < generateNum; i++) {
 			copy.lifeTime = rand() % 5 + 1;
+			copy.color = { (float)(rand() % 100) / 100,(float)(rand() % 100) / 100,(float)(rand() % 100) / 100,1 };
 			copy.velocity = { (float)(rand() % 16) - 8,(float)(rand() % 5),(float)(rand() % 16) - 8 };
-			generator->setNumparticles(1);
-			generator->setParticle(copy);
-			generator->generateParticles();
+			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", pose.p, copy, 0.1, 1, true));
 		}
 	}
 	renderItem->release();
@@ -87,40 +90,35 @@ void Particle::setParticleValues(const particleInfo i)
 	}
 }
 
-Firework::Firework(particleInfo pI, ParticleGenerator* pG, int t) : Particle(pI, pG), type(t)
+Firework::Firework(particleInfo pI, ParticleSystem* pS, int t) : Particle(pI), type(t)
 {
+	pSystem = pS;
 }
 
 Firework::~Firework()
 {
 	//Al destruirse genera partículas
-	if (generator) {
+	if (pSystem) {
 		particleInfo pInfo;
 		pInfo.type = pT_custom;
 		pInfo.color = { (float)(rand() % 2),(float)(rand() % 2),(float)(rand() % 2),1 };
 		pInfo.geometry = CreateShape(physx::PxSphereGeometry(0.15));
 		pInfo.destroySpawnNum = 5;
-		pInfo.maxDistance = 100;
+		pInfo.maxDistance = 1000;
 		pInfo.dumping = 0.1; //Le reducimos el dumping para que caigan más despacio
+		pInfo.lifeTime = rand() % 5 + 1;
+		pInfo.velocity = { 0,0,0 };
+		pInfo.acceleration = { 0,1,0 };
 		if (type < 3) {
-			if (type == 2) pInfo.destroySpawn = true; //Si son de tipo 2 lo ajustamos para que las partículas generen más partículas
-			generator->setPosition(pose.p);
-			for (int i = 0; i < 800; i++) { //Bucle de generación de partículas
-				pInfo.lifeTime = rand() % 5 + 1;
-				pInfo.velocity = { (float)(rand() % 20) - 10,(float)(rand() % 20),(float)(rand() % 20) - 10 };
-				generator->setNumparticles(1);
-				generator->setParticle(pInfo);
-				generator->generateParticles();
-			}
-			generator->setMaxDispersion(0.1); 
+			pInfo.destroySpawn = (type == 2); //Si son de tipo 2 lo ajustamos para que las partículas generen más partículas
+			generator = new GaussianParticleGenerator(pSystem, "GenGenerator", pose.p, pInfo, 5,650, type != 1); //Si es de tipo 1 se genera indefinidamente
+			pSystem->addGenerator(generator);
 		}
 		else {//Fuego artificial de una cara sonriente 
 			pInfo.geometry = CreateShape(physx::PxSphereGeometry(0.5));
 			pInfo.lifeTime = 3;
 			pInfo.velocity = { 0,0,0 };
 			pInfo.dumping = 0.98;
-			generator->setParticle(pInfo);
-			generator->setNumparticles(1);
 			Vector3 eyesOffset(5, 10, 0);
 			Vector3 mouth1(5, -7, 0);
 			Vector3 mouth2(10, -5, 0);
@@ -131,21 +129,15 @@ Firework::~Firework()
 			Vector3 m2 (pose.p.x - mouth1.x, pose.p.y + mouth1.y, pose.p.z);
 			Vector3 m4 = pose.p + mouth2;
 			Vector3 m5(pose.p.x - mouth2.x, pose.p.y + mouth2.y, pose.p.z);
+			Vector3 m6(pose.p.x, pose.p.y + mouth1.y, pose.p.z);
 
-			generator->setPosition(eye1);
-			generator->generateParticles();
-			generator->setPosition(eye2);
-			generator->generateParticles();
-			generator->setPosition(m1);
-			generator->generateParticles();
-			generator->setPosition(m2);
-			generator->generateParticles();
-			generator->setPosition(m4);
-			generator->generateParticles();
-			generator->setPosition(m5);
-			generator->generateParticles();
-			generator->setPosition({pose.p.x, pose.p.y + mouth1.y, pose.p.z});
-			generator->generateParticles();
+			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", eye1, pInfo, 0.1, 1, true));
+			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", eye2, pInfo, 0.1, 1, true));
+			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", m1, pInfo, 0.1, 1, true));
+			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", m2, pInfo, 0.1, 1, true));
+			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", m4, pInfo, 0.1, 1, true));
+			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", m5, pInfo, 0.1, 1, true));
+			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", m6, pInfo, 0.1, 1, true));
 		}
 	}
 }

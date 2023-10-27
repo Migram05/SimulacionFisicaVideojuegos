@@ -9,8 +9,8 @@ class GaussianParticleGenerator : public ParticleGenerator
 private:
 
 public:
-    GaussianParticleGenerator(string name, Vector3 pos, Vector3 vel, particleInfo model, float maxDim, int nParticles, bool oneT = false);
+    GaussianParticleGenerator(class ParticleSystem* parentSys, string name, Vector3 pos, particleInfo model, float maxDim, int nParticles, bool oneT = false);
     ~GaussianParticleGenerator();
-    void generateParticles() override;
+    list<Particle*> generateParticles() override;
 };
 
