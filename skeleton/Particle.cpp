@@ -12,6 +12,7 @@ Particle::Particle(particleInfo pI, ParticleGenerator* pG) : lifeTime(pI.lifeTim
 	gravity = pow((velocity.magnitude() / realVelocity.magnitude()), 2) * GRAVITY_VAL;
 	if (gravity == 0) gravity = GRAVITY_VAL;
 	mass = pow((realVelocity.magnitude() / velocity.magnitude()), 2) * realMass;
+	mass = 1 / mass;
 	acceleration = Vector3(acceleration.x, gravity * acceleration.y, acceleration.z);
 	pInfoCopy = pI;
 	if (pG != nullptr) pSystem = pG->getSystem();
@@ -25,6 +26,7 @@ Particle::~Particle()
 		copy.type = pT_custom;
 		copy.lifeTime = (rand()%4) + 1;
 		copy.destroySpawn = false;
+		copy.origin = pose.p;
 		generator->setPosition(pose.p);
 		for (int i = 0; i < generateNum; i++) {
 			copy.lifeTime = rand() % 5 + 1;
@@ -39,6 +41,7 @@ Particle::~Particle()
 void Particle::integrate(double dt) //Calculos de velocidad 
 {
 	timeAlive += dt;
+	//acceleration = totalForce * mass;
 	velocity += acceleration * dt;
 	velocity *= powf(dumping, dt);
 	pose.p += velocity * dt;
@@ -50,12 +53,21 @@ bool Particle::checkAlive()
 	return (timeAlive < lifeTime && pose.p.y > 0 && (pose.p - origin).magnitude() <= maxDistance);
 }
 
+void Particle::addForce(Vector3 f)
+{
+}
+
+void Particle::clearAcumulatedForce()
+{
+}
+
 void Particle::setParticleValues(const particleInfo i)
 {
 	//Según el tipo de partícula que queramos se cambian valores de velocidad, color y forma...
 	switch (i.type) {
 	case pT_Cannon: 
 	{
+		lifeTime = 5;
 		velocity = i.velocity * 200;
 		realVelocity = i.velocity * 250;
 		shape = CreateShape(physx::PxSphereGeometry(1));
@@ -109,6 +121,7 @@ Firework::~Firework()
 		pInfo.lifeTime = rand() % 5 + 1;
 		pInfo.velocity = { 0,0,0 };
 		pInfo.acceleration = { 0,1,0 };
+		pInfo.origin = pose.p;
 		if (type < 3) {
 			pInfo.destroySpawn = (type == 2); //Si son de tipo 2 lo ajustamos para que las partículas generen más partículas
 			generator = new GaussianParticleGenerator(pSystem, "GenGenerator", pose.p, pInfo, 5,650, type != 1); //Si es de tipo 1 se genera indefinidamente

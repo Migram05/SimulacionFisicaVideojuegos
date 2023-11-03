@@ -3,6 +3,8 @@
 #include "RenderUtils.hpp"
 #include <list>
 #include "Particle.h"
+#include "ParticleForceRegistry.h"
+
 
 using namespace std;
 
@@ -20,6 +22,8 @@ private:
 	list<Particle*> particlesToDeleteList;
 	list<class ParticleGenerator*> particleGeneratorList;
 	list<class ParticleGenerator*> particlesGeneratorsToDeleteList;
+	list<class ForceGenerator*> forceGeneratorList;
+	ParticleForceRegistry pfr;
 	int maxNum = 10000;
 	particleInfo pInfo;
 };

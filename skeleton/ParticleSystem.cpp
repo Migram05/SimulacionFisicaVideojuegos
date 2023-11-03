@@ -19,6 +19,8 @@ ParticleSystem::~ParticleSystem()
 
 void ParticleSystem::integrate(double dt)
 {
+	//cout << particlesList.size() << '\n';
+	pfr.updateForces();
 	list<ParticleGenerator*>::iterator itPG = particleGeneratorList.begin();
 	ParticleGenerator* pG;
 	while (itPG != particleGeneratorList.end()) { //Se actualizan los generadores

@@ -29,6 +29,9 @@ public:
 	virtual ~Particle();
 	void integrate(double dt);
 	bool checkAlive();
+	void addForce(Vector3 f);
+	void clearAcumulatedForce();
+
 protected:
 	void setParticleValues(const particleInfo i);
 	Vector3 velocity;
@@ -48,6 +51,7 @@ protected:
 	RenderItem* renderItem;
 	class ParticleGenerator* generator = nullptr;
 	class ParticleSystem* pSystem;
+	Vector3 totalForce;
 };
 
 class Firework : public Particle 
