@@ -267,6 +267,7 @@
     <ClCompile Include="Render\Camera.cpp" />
     <ClCompile Include="Render\Render.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="TorbellinoGenerator.cpp" />
     <ClCompile Include="UniformParticleGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -284,6 +285,7 @@
     <ClInclude Include="Render\Camera.h" />
     <ClInclude Include="Render\Render.h" />
     <ClInclude Include="Scene.h" />
+    <ClInclude Include="TorbellinoGenerator.h" />
     <ClInclude Include="UniformParticleGenerator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

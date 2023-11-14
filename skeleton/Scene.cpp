@@ -4,6 +4,7 @@
 #include "UniformParticleGenerator.h"
 #include "GravityGenerator.h"
 #include "ParticleDragGenerator.h"
+#include "TorbellinoGenerator.h"
 
 Scene::Scene()
 {
@@ -17,6 +18,7 @@ Scene::Scene()
 	registry = new ParticleForceRegistry();
 	gGenerator = new GravityGenerator();
 	dGenerator = new ParticleDragGenerator(0.3, 0);
+	tGenerator = new TorbellinoGenerator(Vector3(100, 0, 0), 0.3, 0);
 	pSystem.push_back(fireworkPS);
 }
 
@@ -33,6 +35,8 @@ Scene::~Scene()
 	for (ParticleSystem* pS : pSystem) delete pS;
 	registry->deleteForceRegistry(gGenerator);
 	registry->deleteForceRegistry(dGenerator);
+	registry->deleteForceRegistry(tGenerator);
+	delete tGenerator;
 	delete dGenerator;
 	delete gGenerator;
 }
@@ -85,8 +89,9 @@ void Scene::keyPress(unsigned char key)
 			spawnParticleInfo.mass = 1;
 			Particle* p = new Particle(spawnParticleInfo);
 			particlesList.push_back(p);
-			registry->addRegistry(gGenerator, p);
-			registry->addRegistry(dGenerator, p);
+			//registry->addRegistry(gGenerator, p);
+			//registry->addRegistry(dGenerator, p);
+			registry->addRegistry(tGenerator, p);
 			break;
 		}
 	}

@@ -22,6 +22,7 @@ class Scene
 	ParticleForceRegistry* registry;
 	class GravityGenerator* gGenerator;
 	class ParticleDragGenerator* dGenerator;
+	class TorbellinoGenerator* tGenerator;
 public:
 	Scene();
 	~Scene();
