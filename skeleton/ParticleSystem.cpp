@@ -5,22 +5,33 @@
 #include "ParticleGenerator.h"
 #include "GaussianParticleGenerator.h"
 #include "UniformParticleGenerator.h"
+#include "ForceGenerator.h"
+#include "ParticleForceRegistry.h"
 
 ParticleSystem::ParticleSystem(Vector3 p, Vector3 d) : position(p), direction(d)
 {
+	registry = ParticleForceRegistry::instance();
 }
 
 ParticleSystem::~ParticleSystem()
 {
-	for (Particle* p : particlesList) delete p;
-	for (Particle* pt : particlesToDeleteList) delete pt;
+	for (Particle* p : particlesList) {
+		registry->deleteParticleregistry(p);
+		delete p;
+	}
+	for (Particle* pt : particlesToDeleteList) {
+		registry->deleteParticleregistry(pt);
+		delete pt;
+	}
 	for (ParticleGenerator* pG : particleGeneratorList) delete pG;
+	for (auto fG : forceGeneratorList) {
+		registry->deleteForceRegistry(fG);
+		delete fG;
+	}
 }
 
 void ParticleSystem::integrate(double dt)
 {
-	//cout << particlesList.size() << '\n';
-	pfr.updateForces();
 	list<ParticleGenerator*>::iterator itPG = particleGeneratorList.begin();
 	ParticleGenerator* pG;
 	while (itPG != particleGeneratorList.end()) { //Se actualizan los generadores
@@ -30,7 +41,13 @@ void ParticleSystem::integrate(double dt)
 			itPG = particleGeneratorList.erase(itPG);
 		}
 		else {
-			particlesList.splice(particlesList.end(), pG->generateParticles()); //Se añaden las partículas generadas al generador
+			auto listP = pG->generateParticles();
+			for (auto e : listP) {
+				for (auto fG : forceGeneratorList) {
+					registry->addRegistry(fG, e);
+				}
+			}
+			particlesList.splice(particlesList.end(), listP); //Se añaden las partículas generadas al generador
 			++itPG;
 		}
 	}
@@ -58,4 +75,9 @@ void ParticleSystem::integrate(double dt)
 void ParticleSystem::addGenerator(ParticleGenerator* pG)
 {
 	particleGeneratorList.push_back(pG);
+}
+
+void ParticleSystem::addForceGenerator(ForceGenerator* fG)
+{
+	forceGeneratorList.push_back(fG);
 }

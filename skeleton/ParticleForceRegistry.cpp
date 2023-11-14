@@ -2,6 +2,8 @@
 #include "ForceGenerator.h"
 #include "Particle.h"
 
+ParticleForceRegistry* ParticleForceRegistry::instancePtr = NULL;
+
 ParticleForceRegistry::ParticleForceRegistry()
 {
 }

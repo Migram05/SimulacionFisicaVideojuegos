@@ -17,7 +17,8 @@ list<Particle*> UniformParticleGenerator::generateParticles()
 	std::uniform_int_distribution<> distribution(0,maxDispersion);
 	for (int i = 0; i < numParticles; ++i) {
 		pModel.origin = position + Vector3(distribution(generator)*shape.x, distribution(generator) * shape.y, distribution(generator) * shape.z);
-		pL.push_back(new Particle(pModel, this));
+		Particle* p = new Particle(pModel, this);
+		pL.push_back(p);
 	}
 	if (oneTime) shouldDestroyItself = true;
 	return pL;

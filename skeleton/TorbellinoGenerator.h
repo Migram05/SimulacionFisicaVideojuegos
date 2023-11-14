@@ -6,7 +6,7 @@ protected:
 	Vector3 origin;
 	float K = 1;
 public:
-	TorbellinoGenerator(Vector3 o, float k1, float k2);
+	TorbellinoGenerator(Vector3 o, float V, float k1, float k2);
 	virtual void updateForce(class Particle* p) override;
 };
 

@@ -1,9 +1,9 @@
 #include "TorbellinoGenerator.h"
 #include "Particle.h"
 
-TorbellinoGenerator::TorbellinoGenerator(Vector3 o, float k1, float k2) : ParticleDragGenerator(k1, k2)
+TorbellinoGenerator::TorbellinoGenerator(Vector3 o,float V, float k1, float k2) : ParticleDragGenerator(k1, k2)
 {
-	origin = o;
+	origin = o; K = V;
 }
 
 void TorbellinoGenerator::updateForce(Particle* p)

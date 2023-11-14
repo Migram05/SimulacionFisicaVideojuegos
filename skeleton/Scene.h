@@ -20,6 +20,7 @@ class Scene
 	ParticleSystem* fireworkPS;
 	RenderItem* ground;
 	ParticleForceRegistry* registry;
+	ParticleSystem* forcesPS;
 	class GravityGenerator* gGenerator;
 	class ParticleDragGenerator* dGenerator;
 	class TorbellinoGenerator* tGenerator;

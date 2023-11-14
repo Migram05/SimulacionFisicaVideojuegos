@@ -3,7 +3,6 @@
 #include "RenderUtils.hpp"
 #include <list>
 #include "Particle.h"
-#include "ParticleForceRegistry.h"
 
 
 using namespace std;
@@ -15,6 +14,7 @@ public:
 	~ParticleSystem();
 	void integrate(double dt);
 	void addGenerator(class ParticleGenerator* pG);
+	void addForceGenerator(class ForceGenerator* fG);
 private:
 	Vector3 position;
 	Vector3 direction;
@@ -23,8 +23,8 @@ private:
 	list<class ParticleGenerator*> particleGeneratorList;
 	list<class ParticleGenerator*> particlesGeneratorsToDeleteList;
 	list<class ForceGenerator*> forceGeneratorList;
-	ParticleForceRegistry pfr;
 	int maxNum = 10000;
 	particleInfo pInfo;
+	class ParticleForceRegistry* registry;
 };
 
