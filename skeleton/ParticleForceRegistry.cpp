@@ -8,16 +8,13 @@ ParticleForceRegistry::ParticleForceRegistry()
 
 void ParticleForceRegistry::addRegistry(ForceGenerator* f, Particle* p)
 {
-	auto fSetIT = forceGeneratorMap.find(f);
-	auto pSet = forceGeneratorMap.at(f);
-	pSet.insert(p);
-	auto pMapIT = particleMap.find(p);
-	auto fSet = particleMap.at(p);
-	fSet.insert(f);
+	forceGeneratorMap[f].insert(p);
+	particleMap[p].insert(f);
 }
 
 void ParticleForceRegistry::deleteParticleregistry(Particle* p)
 {
+	if (particleMap.find(p) == particleMap.end()) return;
 	auto fSet = particleMap.at(p);
 	for (auto fg : fSet) {
 		forceGeneratorMap.at(fg).erase(p);
@@ -27,6 +24,7 @@ void ParticleForceRegistry::deleteParticleregistry(Particle* p)
 
 void ParticleForceRegistry::deleteForceRegistry(ForceGenerator* f)
 {
+	if (forceGeneratorMap.find(f) == forceGeneratorMap.end()) return;
 	auto pSet = forceGeneratorMap.at(f);
 	for (auto p : pSet) {
 		deleteParticleregistry(p);

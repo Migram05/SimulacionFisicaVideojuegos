@@ -2,24 +2,39 @@
 #include <iostream>
 #include "GaussianParticleGenerator.h"
 #include "UniformParticleGenerator.h"
+#include "GravityGenerator.h"
+#include "ParticleDragGenerator.h"
 
 Scene::Scene()
 {
 	camera = GetCamera();
 	//Crea la información para generar un proyectil por defecto
-	spawnParticleInfo = { camera->getEye(), camera->getDir(), camera->getDir(), 0.98, 5, 700, particleType::pT_Cannon,Vector4(1,0,0,1), CreateShape(physx::PxSphereGeometry(1))};
+	spawnParticleInfo = { camera->getEye(), camera->getDir(), camera->getDir(), 0.98, 5, 700,1, particleType::pT_Cannon,Vector4(1,0,0,1), CreateShape(physx::PxSphereGeometry(1))};
 	//Suelo
 	ground = new RenderItem(CreateShape(physx::PxBoxGeometry(5000,1,5000)), Vector4(0, 1, 0, 1));
 	
 	fireworkPS = new ParticleSystem(Vector3(0, 40, 0), Vector3(0, 1, 0));
+	registry = new ParticleForceRegistry();
+	gGenerator = new GravityGenerator();
+	dGenerator = new ParticleDragGenerator(0.3, 0);
 	pSystem.push_back(fireworkPS);
 }
 
 Scene::~Scene()
 {
-	for (Particle* p : particlesList) delete p;
-	for (Particle* pt : particlesToDelete) delete pt;
+	for (Particle* p : particlesList) {
+		delete p;
+		registry->deleteParticleregistry(p);
+	}
+	for (Particle* pt : particlesToDelete) {
+		delete pt;
+		registry->deleteParticleregistry(pt);
+	}
 	for (ParticleSystem* pS : pSystem) delete pS;
+	registry->deleteForceRegistry(gGenerator);
+	registry->deleteForceRegistry(dGenerator);
+	delete dGenerator;
+	delete gGenerator;
 }
 
 void Scene::keyPress(unsigned char key)
@@ -67,7 +82,11 @@ void Scene::keyPress(unsigned char key)
 			spawnParticleInfo.velocity = spawnParticleInfo.acceleration = camera->getDir();
 			spawnParticleInfo.origin = camera->getEye();
 			spawnParticleInfo.lifeTime = 1;
-			particlesList.push_back(new Particle(spawnParticleInfo));
+			spawnParticleInfo.mass = 1;
+			Particle* p = new Particle(spawnParticleInfo);
+			particlesList.push_back(p);
+			registry->addRegistry(gGenerator, p);
+			registry->addRegistry(dGenerator, p);
 			break;
 		}
 	}
@@ -77,6 +96,7 @@ void Scene::integrate(float dt)
 {
 	list<Particle*>::iterator it = particlesList.begin();
 	Particle* p;
+	registry->updateForces();
 	while (it != particlesList.end()) { //Se actualizan las partículas
 		p = *it;
 		p->integrate(dt);
@@ -90,6 +110,7 @@ void Scene::integrate(float dt)
 
 	for (Particle* pt : particlesToDelete) { //Se borran las partículas pendientes de destruir
 		delete pt;
+		registry->deleteParticleregistry(pt);
 	}
 	particlesToDelete.clear();
 }

@@ -11,8 +11,8 @@ Particle::Particle(particleInfo pI, ParticleGenerator* pG) : lifeTime(pI.lifeTim
 	setParticleValues(pI);
 	gravity = pow((velocity.magnitude() / realVelocity.magnitude()), 2) * GRAVITY_VAL;
 	if (gravity == 0) gravity = GRAVITY_VAL;
-	mass = pow((realVelocity.magnitude() / velocity.magnitude()), 2) * realMass;
-	mass = 1 / mass;
+	mass = pow((realVelocity.magnitude() / velocity.magnitude()), 2) * pI.mass;
+	invMass = 1 / mass;
 	acceleration = Vector3(acceleration.x, gravity * acceleration.y, acceleration.z);
 	pInfoCopy = pI;
 	if (pG != nullptr) pSystem = pG->getSystem();
@@ -41,10 +41,12 @@ Particle::~Particle()
 void Particle::integrate(double dt) //Calculos de velocidad 
 {
 	timeAlive += dt;
-	//acceleration = totalForce * mass;
+	acceleration = totalForce * invMass;
 	velocity += acceleration * dt;
 	velocity *= powf(dumping, dt);
 	pose.p += velocity * dt;
+
+	clearAcumulatedForce();
 }
 
 bool Particle::checkAlive()
@@ -55,10 +57,12 @@ bool Particle::checkAlive()
 
 void Particle::addForce(Vector3 f)
 {
+	totalForce += f;
 }
 
 void Particle::clearAcumulatedForce()
 {
+	totalForce *= 0;
 }
 
 void Particle::setParticleValues(const particleInfo i)

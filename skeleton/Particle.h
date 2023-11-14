@@ -15,6 +15,7 @@ struct particleInfo
 	float dumping = 0.98;
 	float lifeTime = 2;
 	float maxDistance;
+	float mass = 1;
 	particleType type;
 	Vector4 color;
 	physx::PxShape* geometry;
@@ -31,6 +32,9 @@ public:
 	bool checkAlive();
 	void addForce(Vector3 f);
 	void clearAcumulatedForce();
+	inline float getMass() { return mass; }
+	inline float getInvMass() { return invMass; }
+	inline Vector3 getVel() { return velocity; }
 
 protected:
 	void setParticleValues(const particleInfo i);
@@ -38,7 +42,7 @@ protected:
 	Vector3 origin;
 	Vector3 realVelocity;
 	Vector3 acceleration;
-	float mass, realMass;
+	float mass, invMass;
 	float gravity;
 	float maxDistance;
 	float timeAlive = 0, lifeTime;
@@ -51,7 +55,7 @@ protected:
 	RenderItem* renderItem;
 	class ParticleGenerator* generator = nullptr;
 	class ParticleSystem* pSystem;
-	Vector3 totalForce;
+	Vector3 totalForce = { 0,0,0 };
 };
 
 class Firework : public Particle 

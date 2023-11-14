@@ -4,6 +4,7 @@
 #include "RenderUtils.hpp"
 #include "Particle.h"
 #include "ParticleSystem.h"
+#include "ParticleForceRegistry.h"
 
 using namespace std;
 using namespace physx;
@@ -18,6 +19,9 @@ class Scene
 	vector< ParticleSystem*> pSystem;
 	ParticleSystem* fireworkPS;
 	RenderItem* ground;
+	ParticleForceRegistry* registry;
+	class GravityGenerator* gGenerator;
+	class ParticleDragGenerator* dGenerator;
 public:
 	Scene();
 	~Scene();
