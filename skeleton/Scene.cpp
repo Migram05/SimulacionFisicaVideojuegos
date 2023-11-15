@@ -5,6 +5,7 @@
 #include "GravityGenerator.h"
 #include "ParticleDragGenerator.h"
 #include "TorbellinoGenerator.h"
+#include "ExplosionForceGenerator.h"
 
 Scene::Scene()
 {
@@ -15,41 +16,38 @@ Scene::Scene()
 	ground = new RenderItem(CreateShape(physx::PxBoxGeometry(5000,1,5000)), Vector4(0, 1, 0, 1));
 	
 	fireworkPS = new ParticleSystem(Vector3(0, 40, 0), Vector3(0, 1, 0));
-
-	registry = ParticleForceRegistry::instance();
-	gGenerator = new GravityGenerator();
-	dGenerator = new ParticleDragGenerator(1, 0);
-	tGenerator = new TorbellinoGenerator(Vector3(10, 50, 0),30, 0.3, 0);
 	pSystem.push_back(fireworkPS);
-	
 
 	forcesPS = new ParticleSystem(Vector3(0, 40, 0), Vector3(0, 1, 0));
 	pSystem.push_back(forcesPS);
-	particleInfo newInfo = { Vector3(0,0,0), Vector3(0,1,0), Vector3(0,1,0), 0.98, 50, 200,5, particleType::pT_custom,Vector4(0.15f,0.15f,0.2f,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
-	auto forcesParticleGenerator = new GaussianParticleGenerator(pSystem[1], "GFuerzas", Vector3(10, 80, 0), newInfo, 5, 3, false);
-	forcesPS->addGenerator(forcesParticleGenerator);
+
+	registry = ParticleForceRegistry::instance();
+	//gGenerator = new GravityGenerator(Vector3(10, 80, 0), Vector3(0,-98,0), 100);
+	dGenerator = new ParticleDragGenerator(Vector3(10, 100, 0), 1, 0);
+	tGenerator = new TorbellinoGenerator(Vector3(0, 50, 0),5, 2, 0, 1000);
+	
 	forcesPS->addForceGenerator(tGenerator);
 	//forcesPS->addForceGenerator(dGenerator);
 	//forcesPS->addForceGenerator(gGenerator);
+
+	particleInfo newInfo = { Vector3(0,0,0), Vector3(0,1,0), Vector3(0,1,0), 0.98, 50, 1000,0.5, particleType::pT_custom,Vector4(0.15f,0.15f,0.2f,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
+	auto forcesParticleGenerator = new GaussianParticleGenerator(pSystem[1], "GFuerzas", Vector3(50, 80, 0), newInfo, 5, 1, false);
+	forcesPS->addGenerator(forcesParticleGenerator);
+
+	particleInfo newInfo2 = { Vector3(0,0,0), Vector3(0,1,0), Vector3(0,1,0), 0.98, 50, 1000,0.5, particleType::pT_custom,Vector4(1,1,1,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
+	auto forcesParticleGenerator2 = new GaussianParticleGenerator(pSystem[1], "GFuerzas2", Vector3(50, 80, 0), newInfo2, 5, 1, false);
+	forcesPS->addGenerator(forcesParticleGenerator2);
 }	
 
 Scene::~Scene()
 {
 	for (Particle* p : particlesList) {
 		delete p;
-		//registry->deleteParticleregistry(p);
 	}
 	for (Particle* pt : particlesToDelete) {
 		delete pt;
-		//registry->deleteParticleregistry(pt);
 	}
 	for (ParticleSystem* pS : pSystem) delete pS;
-	/*registry->deleteForceRegistry(gGenerator);
-	registry->deleteForceRegistry(dGenerator);
-	registry->deleteForceRegistry(tGenerator);
-	delete tGenerator;
-	delete dGenerator;
-	delete gGenerator;*/
 }
 
 void Scene::keyPress(unsigned char key)
@@ -87,6 +85,11 @@ void Scene::keyPress(unsigned char key)
 			spawnParticleInfo.velocity = { 0,35,0 }; spawnParticleInfo.lifeTime = 3; spawnParticleInfo.acceleration = { 0,1,0 };
 			spawnParticleInfo.origin = { 10,40,10 };
 			particlesList.push_back(new Firework(spawnParticleInfo, fireworkPS, 3));
+			break;
+		}
+		case '6':
+		{
+			forcesPS->addForceGenerator(new ExplosionForceGenerator(Vector3(0, 80, 50), 1000000, 100));
 			break;
 		}
 		case ' ':

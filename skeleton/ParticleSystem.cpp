@@ -16,16 +16,13 @@ ParticleSystem::ParticleSystem(Vector3 p, Vector3 d) : position(p), direction(d)
 ParticleSystem::~ParticleSystem()
 {
 	for (Particle* p : particlesList) {
-		//registry->deleteParticleregistry(p);
 		delete p;
 	}
 	for (Particle* pt : particlesToDeleteList) {
-		//registry->deleteParticleregistry(pt);
 		delete pt;
 	}
 	for (ParticleGenerator* pG : particleGeneratorList) delete pG;
 	for (auto fG : forceGeneratorList) {
-		//registry->deleteForceRegistry(fG);
 		delete fG;
 	}
 }
@@ -42,11 +39,21 @@ void ParticleSystem::integrate(double dt)
 		}
 		else {
 			auto listP = pG->generateParticles();
-			for (auto e : listP) {
-				for (auto fG : forceGeneratorList) {
-					registry->addRegistry(fG, e);
+			/*auto fGIT = forceGeneratorList.begin();
+			while (fGIT != forceGeneratorList.end()) {
+				auto fG = *fGIT;
+				if (fG->shouldDestroy()) {
+					ParticleForceRegistry::instance()->deleteForceRegistry(fG);
+					fGIT = forceGeneratorList.erase(fGIT);
 				}
-			}
+				else {
+					for (auto e : listP) {
+						registry->addRegistry(fG, e);
+					}
+					fGIT++;
+				}
+				
+			}*/
 			particlesList.splice(particlesList.end(), listP); //Se añaden las partículas generadas al generador
 			++itPG;
 		}
@@ -56,11 +63,26 @@ void ParticleSystem::integrate(double dt)
 	while (it != particlesList.end()) { //Se actualizan las partículas
 		p = *it;
 		p->integrate(dt);
+		auto fGIT = forceGeneratorList.begin();
+		while (fGIT != forceGeneratorList.end()) {
+			auto fG = *fGIT;
+			if (fG->shouldDestroy()) {
+				ParticleForceRegistry::instance()->deleteForceRegistry(fG);
+				delete fG;
+				fGIT = forceGeneratorList.erase(fGIT);
+			}
+			else {
+				registry->addRegistry(fG, p);
+				fGIT++;
+			}
+
+		}
 		if (!p->checkAlive()) { //Se comprueban si se ha acabado su tiempo de vida o han tocado el suelo
 			particlesToDeleteList.push_back(p);
 			it = particlesList.erase(it);
 		}
 		else ++it;
+
 	}
 	for (Particle* pt : particlesToDeleteList) { //Se borran las partículas pendientes de destruir
 		delete pt;
@@ -80,4 +102,9 @@ void ParticleSystem::addGenerator(ParticleGenerator* pG)
 void ParticleSystem::addForceGenerator(ForceGenerator* fG)
 {
 	forceGeneratorList.push_back(fG);
+	/*if (fG->isOneTimeEffect()) {
+		for (auto p : particlesList) {
+			registry->addRegistry(fG, p);
+		}
+	}*/
 }

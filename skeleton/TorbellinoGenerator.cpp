@@ -1,15 +1,20 @@
 #include "TorbellinoGenerator.h"
 #include "Particle.h"
 
-TorbellinoGenerator::TorbellinoGenerator(Vector3 o,float V, float k1, float k2) : ParticleDragGenerator(k1, k2)
+TorbellinoGenerator::TorbellinoGenerator(Vector3 o,float V, float k1, float k2, float r, bool oneT) : ParticleDragGenerator(o, k1, k2, r, oneT)
 {
-	origin = o; K = V;
+	K = V;
 }
 
 void TorbellinoGenerator::updateForce(Particle* p)
 {
-	Vector3 pPose = p->getPos();
-	Vector3 velTorbellino = {-(pPose.z-origin.z),50-(pPose.y-origin.y),(pPose.x-origin.x)};
-	velTorbellino *= K;
-	p->addForce(velTorbellino);
+	
+	if (radius <= 0 || (p->getPos() - origin.p).magnitude() <= radius) {
+		if (fabs(p->getInvMass()) < 1e-10) return;
+		Vector3 pPose = p->getPos();
+		Vector3 velTorbellino = { -(pPose.z - origin.p.z),50 - (pPose.y - origin.p.y),(pPose.x - origin.p.x) };
+		velTorbellino *= K;
+		p->addForce(velTorbellino);
+	}
+	ParticleDragGenerator::updateForce(p);
 }

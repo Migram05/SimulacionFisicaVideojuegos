@@ -42,6 +42,7 @@ void ParticleForceRegistry::updateForces()
 		for (auto p : map.second) {
 			map.first->updateForce(p);
 		}
+		map.first->setEffectDone();
 		++it;
 	}
 }
