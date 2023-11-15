@@ -7,6 +7,9 @@ enum particleType {
 	pT_custom, pT_Bullet, pT_Cannon, pT_Spark
 };
 
+/**
+ * Origen, Vel, Acel, Dumping, LT, MaxDistance, Masa, Tipo, Color, Forma, Debería crear al destruirse, Num de P creadas
+ */
 struct particleInfo
 {
 	Vector3 origin;

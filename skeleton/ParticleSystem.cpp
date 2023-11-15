@@ -16,16 +16,16 @@ ParticleSystem::ParticleSystem(Vector3 p, Vector3 d) : position(p), direction(d)
 ParticleSystem::~ParticleSystem()
 {
 	for (Particle* p : particlesList) {
-		registry->deleteParticleregistry(p);
+		//registry->deleteParticleregistry(p);
 		delete p;
 	}
 	for (Particle* pt : particlesToDeleteList) {
-		registry->deleteParticleregistry(pt);
+		//registry->deleteParticleregistry(pt);
 		delete pt;
 	}
 	for (ParticleGenerator* pG : particleGeneratorList) delete pG;
 	for (auto fG : forceGeneratorList) {
-		registry->deleteForceRegistry(fG);
+		//registry->deleteForceRegistry(fG);
 		delete fG;
 	}
 }

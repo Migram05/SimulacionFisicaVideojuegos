@@ -3,6 +3,7 @@
 #include "GaussianParticleGenerator.h"
 #include "UniformParticleGenerator.h"
 #include "ParticleSystem.h"
+#include "ParticleForceRegistry.h"
 #include <iostream>
 
 Particle::Particle(particleInfo pI, ParticleGenerator* pG) : lifeTime(pI.lifeTime), dumping(pI.dumping), origin(pI.origin), maxDistance(pI.maxDistance), acceleration(pI.acceleration), velocity(pI.velocity), generator(pG), generateOnDestroy(pI.destroySpawn), generateNum(pI.destroySpawnNum)
@@ -35,6 +36,7 @@ Particle::~Particle()
 			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", pose.p, copy, 0.1, 1, true));
 		}
 	}
+	ParticleForceRegistry::instance()->deleteParticleregistry(this);
 	renderItem->release();
 }
 
