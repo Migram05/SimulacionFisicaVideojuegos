@@ -6,7 +6,7 @@ TorbellinoGenerator::TorbellinoGenerator(Vector3 o,float V, float k1, float k2, 
 	K = V;
 }
 
-void TorbellinoGenerator::updateForce(Particle* p)
+void TorbellinoGenerator::updateForce(Particle* p, float dt)
 {
 	
 	if (radius <= 0 || (p->getPos() - origin.p).magnitude() <= radius) {
@@ -16,5 +16,5 @@ void TorbellinoGenerator::updateForce(Particle* p)
 		velTorbellino *= K;
 		p->addForce(velTorbellino);
 	}
-	ParticleDragGenerator::updateForce(p);
+	ParticleDragGenerator::updateForce(p, dt); //Se aplica un drag también
 }

@@ -34,13 +34,13 @@ void ParticleForceRegistry::deleteForceRegistry(ForceGenerator* f)
 	forceGeneratorMap.erase(f);
 }
 
-void ParticleForceRegistry::updateForces()
+void ParticleForceRegistry::updateForces(float dt)
 {
 	auto it = forceGeneratorMap.begin();
 	while (it != forceGeneratorMap.end()) {
 		auto map = *it;
 		for (auto p : map.second) {
-			map.first->updateForce(p);
+			map.first->updateForce(p, dt);
 		}
 		map.first->setEffectDone();
 		++it;

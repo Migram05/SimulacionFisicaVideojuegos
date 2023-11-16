@@ -22,7 +22,7 @@ public:
 	void addRegistry(class ForceGenerator* f, class Particle* p);
 	void deleteParticleregistry(class Particle* p);
 	void deleteForceRegistry(class ForceGenerator* f);
-	void updateForces();
+	void updateForces(float dt);
 };
 
 

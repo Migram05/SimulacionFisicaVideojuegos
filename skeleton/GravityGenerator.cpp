@@ -6,7 +6,7 @@ GravityGenerator::GravityGenerator(Vector3 o, const Vector3& g, float r, bool on
 	gravity = g;
 }
 
-void GravityGenerator::updateForce(Particle* p)
+void GravityGenerator::updateForce(Particle* p, float dt)
 {
 	if (radius <= 0 || (p->getPos() - origin.p).magnitude() <= radius) {
 		if (fabs(p->getInvMass()) < 1e-10) return;

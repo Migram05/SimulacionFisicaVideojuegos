@@ -7,7 +7,7 @@ ParticleDragGenerator::ParticleDragGenerator(Vector3 o, float v1, float v2, floa
 	k1 = v1; k2 = v2;
 }
 
-void ParticleDragGenerator::updateForce(Particle* p)
+void ParticleDragGenerator::updateForce(Particle* p, float dt)
 {
 	if (radius <= 0 || (p->getPos() - origin.p).magnitude() <= radius) {
 		if (fabs(p->getInvMass()) < 1e-10) return;

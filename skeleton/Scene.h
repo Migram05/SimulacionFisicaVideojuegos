@@ -24,7 +24,6 @@ class Scene
 	class GravityGenerator* gGenerator;
 	class ParticleDragGenerator* dGenerator;
 	class TorbellinoGenerator* tGenerator;
-	class ExplosionForceGenerator* eGenerator;
 public:
 	Scene();
 	~Scene();

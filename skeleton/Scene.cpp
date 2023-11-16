@@ -89,7 +89,7 @@ void Scene::keyPress(unsigned char key)
 		}
 		case '6':
 		{
-			forcesPS->addForceGenerator(new ExplosionForceGenerator(Vector3(0, 80, 50), 1000000, 100));
+			forcesPS->addForceGenerator(new ExplosionForceGenerator(Vector3(0, 80, 50), 1000000, 50, false));
 			break;
 		}
 		case ' ':
@@ -115,7 +115,7 @@ void Scene::integrate(float dt)
 {
 	list<Particle*>::iterator it = particlesList.begin();
 	Particle* p;
-	registry->updateForces();
+	registry->updateForces(dt);
 	while (it != particlesList.end()) { //Se actualizan las partículas
 		p = *it;
 		p->integrate(dt);
@@ -129,7 +129,6 @@ void Scene::integrate(float dt)
 
 	for (Particle* pt : particlesToDelete) { //Se borran las partículas pendientes de destruir
 		delete pt;
-		//registry->deleteParticleregistry(pt);
 	}
 	particlesToDelete.clear();
 }
