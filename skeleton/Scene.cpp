@@ -11,7 +11,7 @@ Scene::Scene()
 {
 	camera = GetCamera();
 	//Crea la información para generar un proyectil por defecto
-	spawnParticleInfo = { camera->getEye(), camera->getDir(), camera->getDir(), 0.98, 5, 700,1, particleType::pT_Cannon,Vector4(1,0,0,1), CreateShape(physx::PxSphereGeometry(1))};
+	spawnParticleInfo = { camera->getEye(), camera->getDir(), 0.98, 5, 700,1, particleType::pT_Cannon,Vector4(1,0,0,1), CreateShape(physx::PxSphereGeometry(1))};
 	//Suelo
 	ground = new RenderItem(CreateShape(physx::PxBoxGeometry(5000,1,5000)), Vector4(0, 1, 0, 1));
 	
@@ -22,22 +22,30 @@ Scene::Scene()
 	pSystem.push_back(forcesPS);
 
 	registry = ParticleForceRegistry::instance();
-	//gGenerator = new GravityGenerator(Vector3(10, 80, 0), Vector3(0,-98,0), 100);
-	dGenerator = new ParticleDragGenerator(Vector3(10, 100, 0), 1, 0);
+	gGenerator = new GravityGenerator(Vector3(10, 80, 0), Vector3(0,-98,0));
+	//dGenerator = new ParticleDragGenerator(Vector3(10, 100, 0), 1, 0);
 	tGenerator = new TorbellinoGenerator(Vector3(0, 50, 0),5, 2, 0, 1000);
 	
-	forcesPS->addForceGenerator(tGenerator);
-	//forcesPS->addForceGenerator(dGenerator);
-	//forcesPS->addForceGenerator(gGenerator);
-
-	particleInfo newInfo = { Vector3(0,0,0), Vector3(0,1,0), Vector3(0,1,0), 0.98, 50, 1000,0.5, particleType::pT_custom,Vector4(0.15f,0.15f,0.2f,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
+	if (tGenerator) forcesPS->addForceGenerator(tGenerator);
+	//if (dGenerator) forcesPS->addForceGenerator(dGenerator);
+	if (gGenerator) forcesPS->addForceGenerator(gGenerator);
+	
+	/*
+	particleInfo newInfo = { Vector3(0,0,0), Vector3(0,1,0), 0.98, 50, 1000,0.5, particleType::pT_custom,Vector4(0.15f,0.15f,0.2f,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
 	auto forcesParticleGenerator = new GaussianParticleGenerator(pSystem[1], "GFuerzas", Vector3(50, 80, 0), newInfo, 5, 1, false);
 	forcesPS->addGenerator(forcesParticleGenerator);
 
-	particleInfo newInfo2 = { Vector3(0,0,0), Vector3(0,1,0), Vector3(0,1,0), 0.98, 50, 1000,0.5, particleType::pT_custom,Vector4(1,1,1,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
+	particleInfo newInfo2 = { Vector3(0,0,0), Vector3(0,1,0), 0.98, 50, 1000,0.5, particleType::pT_custom,Vector4(1,1,1,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
 	auto forcesParticleGenerator2 = new GaussianParticleGenerator(pSystem[1], "GFuerzas2", Vector3(50, 80, 0), newInfo2, 5, 1, false);
 	forcesPS->addGenerator(forcesParticleGenerator2);
+	*/
+
+	particleInfo SSInfo2 = { camera->getEye() + (camera->getDir() * 15), Vector3(0,1,0), 0.98, 50, 1000,0, particleType::pT_custom,Vector4(0,1,0,1), CreateShape(physx::PxBoxGeometry(1, 3, 1)), false, 0};
+	Particle* p = new Particle(SSInfo2);
+	
+	particlesList.push_back(p);
 }	
+
 
 Scene::~Scene()
 {
@@ -66,7 +74,7 @@ void Scene::keyPress(unsigned char key)
 		case '3':
 		{
 			spawnParticleInfo.type = pT_custom; spawnParticleInfo.color = { 0,1,1,1 }; spawnParticleInfo.geometry = CreateShape(physx::PxSphereGeometry(1));
-			spawnParticleInfo.velocity = { 0,35,0 }; spawnParticleInfo.lifeTime = 3; spawnParticleInfo.acceleration = { 0,1,0 };
+			spawnParticleInfo.velocity = { 0,35,0 }; spawnParticleInfo.lifeTime = 3;
 			spawnParticleInfo.origin = { 10,40,10 };
 			particlesList.push_back(new Firework(spawnParticleInfo, fireworkPS));
 			break;
@@ -74,7 +82,7 @@ void Scene::keyPress(unsigned char key)
 		case '4':
 		{
 			spawnParticleInfo.type = pT_custom; spawnParticleInfo.color = { 0,0.2,0.5,1 }; spawnParticleInfo.geometry = CreateShape(physx::PxSphereGeometry(1));
-			spawnParticleInfo.velocity = { 0,35,0 }; spawnParticleInfo.lifeTime = 3; spawnParticleInfo.acceleration = { 0,1,0 };
+			spawnParticleInfo.velocity = { 0,35,0 }; spawnParticleInfo.lifeTime = 3;
 			spawnParticleInfo.origin = { 10,40,10 }; spawnParticleInfo.destroySpawnNum = 10;
 			particlesList.push_back(new Firework(spawnParticleInfo, fireworkPS, 2));
 			break;
@@ -82,7 +90,7 @@ void Scene::keyPress(unsigned char key)
 		case '5':
 		{
 			spawnParticleInfo.type = pT_custom; spawnParticleInfo.color = { 1,0.2,0.5,1 }; spawnParticleInfo.geometry = CreateShape(physx::PxSphereGeometry(1));
-			spawnParticleInfo.velocity = { 0,35,0 }; spawnParticleInfo.lifeTime = 3; spawnParticleInfo.acceleration = { 0,1,0 };
+			spawnParticleInfo.velocity = { 0,35,0 }; spawnParticleInfo.lifeTime = 3;
 			spawnParticleInfo.origin = { 10,40,10 };
 			particlesList.push_back(new Firework(spawnParticleInfo, fireworkPS, 3));
 			break;
@@ -97,15 +105,15 @@ void Scene::keyPress(unsigned char key)
 			if (particlesList.size() > maxParticleCount) break;
 			//Se actualizan los valores de posición y dirección de la cámara para la creación del proyectil
 			//Esto no se utiliza para la práctica de los fuegos artificiales
-			spawnParticleInfo.velocity = spawnParticleInfo.acceleration = camera->getDir();
+			spawnParticleInfo.velocity = camera->getDir();
 			spawnParticleInfo.origin = camera->getEye();
 			spawnParticleInfo.lifeTime = 1;
-			spawnParticleInfo.mass = 1;
+			spawnParticleInfo.mass = 0.1;
 			Particle* p = new Particle(spawnParticleInfo);
 			particlesList.push_back(p);
-			//registry->addRegistry(gGenerator, p);
-			//registry->addRegistry(dGenerator, p);
-			//registry->addRegistry(tGenerator, p);
+			if(gGenerator) registry->addRegistry(gGenerator, p);
+			if(dGenerator) registry->addRegistry(dGenerator, p);
+			if(tGenerator) registry->addRegistry(tGenerator, p);
 			break;
 		}
 	}

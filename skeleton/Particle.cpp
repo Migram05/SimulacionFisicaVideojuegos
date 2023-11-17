@@ -6,15 +6,13 @@
 #include "ParticleForceRegistry.h"
 #include <iostream>
 
-Particle::Particle(particleInfo pI, ParticleGenerator* pG) : lifeTime(pI.lifeTime), dumping(pI.dumping), origin(pI.origin), maxDistance(pI.maxDistance), acceleration(pI.acceleration), velocity(pI.velocity), generator(pG), generateOnDestroy(pI.destroySpawn), generateNum(pI.destroySpawnNum)
+Particle::Particle(particleInfo pI, ParticleGenerator* pG) : lifeTime(pI.lifeTime), dumping(pI.dumping), origin(pI.origin), maxDistance(pI.maxDistance), velocity(pI.velocity), generator(pG), generateOnDestroy(pI.destroySpawn), generateNum(pI.destroySpawnNum)
 {
 	pose = physx::PxTransform(pI.origin.x, pI.origin.y, pI.origin.z);
 	setParticleValues(pI);
-	gravity = pow((velocity.magnitude() / realVelocity.magnitude()), 2) * GRAVITY_VAL;
-	if (gravity == 0) gravity = GRAVITY_VAL;
-	mass = pow((realVelocity.magnitude() / velocity.magnitude()), 2) * pI.mass;
-	invMass = 1 / mass;
-	acceleration = Vector3(acceleration.x, gravity * acceleration.y, acceleration.z);
+	
+	//mass = pow((realVelocity.magnitude() / velocity.magnitude()), 2) * pI.mass;
+	//invMass = 1 / mass;
 	pInfoCopy = pI;
 	if (pG != nullptr) pSystem = pG->getSystem();
 }
@@ -42,6 +40,7 @@ Particle::~Particle()
 
 void Particle::integrate(double dt) //Calculos de velocidad 
 {
+	if (invMass <= 0.0f) return;
 	timeAlive += dt;
 	acceleration = totalForce * invMass;
 	velocity += acceleration * dt;
@@ -126,7 +125,6 @@ Firework::~Firework()
 		pInfo.dumping = 0.1; //Le reducimos el dumping para que caigan más despacio
 		pInfo.lifeTime = rand() % 5 + 1;
 		pInfo.velocity = { 0,0,0 };
-		pInfo.acceleration = { 0,1,0 };
 		pInfo.origin = pose.p;
 		if (type < 3) {
 			pInfo.destroySpawn = (type == 2); //Si son de tipo 2 lo ajustamos para que las partículas generen más partículas

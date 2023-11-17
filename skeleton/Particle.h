@@ -1,7 +1,6 @@
 #pragma once
 #include "core.hpp"
 #include "RenderUtils.hpp"
-#define GRAVITY_VAL  -9.8;
 
 enum particleType {
 	pT_custom, pT_Bullet, pT_Cannon, pT_Spark
@@ -14,7 +13,6 @@ struct particleInfo
 {
 	Vector3 origin;
 	Vector3 velocity;
-	Vector3 acceleration = { 0,1,0 };
 	float dumping = 0.98;
 	float lifeTime = 2;
 	float maxDistance;
@@ -45,9 +43,8 @@ protected:
 	Vector3 velocity;
 	Vector3 origin;
 	Vector3 realVelocity;
-	Vector3 acceleration;
+	Vector3 acceleration = { 0,0,0 };
 	float mass, invMass;
-	float gravity;
 	float maxDistance;
 	float timeAlive = 0, lifeTime;
 	bool generateOnDestroy;
