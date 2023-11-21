@@ -37,7 +37,7 @@ public:
 	inline float getInvMass() { return invMass; }
 	inline Vector3 getVel() { return velocity; }
 	inline Vector3 getPos() { return Vector3(pose.p.x, pose.p.y, pose.p.z); }
-
+	inline Vector3 getTotalForce() { return totalForce; }
 protected:
 	void setParticleValues(const particleInfo i);
 	Vector3 velocity;

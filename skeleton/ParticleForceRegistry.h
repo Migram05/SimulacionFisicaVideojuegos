@@ -19,7 +19,7 @@ public:
 		}
 		return instancePtr;
 	}
-	void addRegistry(class ForceGenerator* f, class Particle* p);
+	void addRegistry(class ForceGenerator* f, class Particle* p = nullptr);
 	void deleteParticleregistry(class Particle* p);
 	void deleteForceRegistry(class ForceGenerator* f);
 	void updateForces(float dt);

@@ -1,6 +1,7 @@
 #include "ParticleForceRegistry.h"
 #include "ForceGenerator.h"
 #include "Particle.h"
+#include <iostream>
 
 ParticleForceRegistry* ParticleForceRegistry::instancePtr = NULL;
 
@@ -10,8 +11,11 @@ ParticleForceRegistry::ParticleForceRegistry()
 
 void ParticleForceRegistry::addRegistry(ForceGenerator* f, Particle* p)
 {
-	forceGeneratorMap[f].insert(p);
-	particleMap[p].insert(f);
+	if (p) {
+		forceGeneratorMap[f].insert(p);
+		particleMap[p].insert(f);
+	}
+	else forceGeneratorMap[f];
 }
 
 void ParticleForceRegistry::deleteParticleregistry(Particle* p)
@@ -29,7 +33,7 @@ void ParticleForceRegistry::deleteForceRegistry(ForceGenerator* f)
 	if (forceGeneratorMap.find(f) == forceGeneratorMap.end()) return;
 	auto pSet = forceGeneratorMap.at(f);
 	for (auto p : pSet) {
-		deleteParticleregistry(p);
+		particleMap.at(p).erase(f);
 	}
 	forceGeneratorMap.erase(f);
 }

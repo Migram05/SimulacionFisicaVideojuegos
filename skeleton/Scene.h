@@ -24,6 +24,7 @@ class Scene
 	class GravityGenerator* gGenerator = nullptr;
 	class ParticleDragGenerator* dGenerator = nullptr;
 	class TorbellinoGenerator* tGenerator = nullptr;
+	class SpringForceGenerator* sGenerator = nullptr;
 public:
 	Scene();
 	~Scene();

@@ -16,5 +16,7 @@ void ExplosionForceGenerator::updateForce(Particle* p, float dt)
 		p->addForce(explosionForce);
 	}
 	radius = explosionSpeed * timeAlive / 100; //Aumento del radio
-	if (timeAlive > explosionLifeTime) oneTimeEffect = true; //Al pasar un tiempo, se activa para la destrucción
+	if (timeAlive > explosionLifeTime) {
+		oneTimeEffect = true; //Al pasar un tiempo, se activa para la destrucción
+	}
 }

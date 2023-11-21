@@ -48,20 +48,7 @@ void ParticleSystem::integrate(double dt)
 	while (it != particlesList.end()) { //Se actualizan las partículas
 		p = *it;
 		p->integrate(dt);
-		auto fGIT = forceGeneratorList.begin();
-		while (fGIT != forceGeneratorList.end()) {
-			auto fG = *fGIT;
-			if (fG->shouldDestroy()) { //Si el generador de fuerza se tiene que destruir, se elimina de la lista de generadores de fuerza
-				ParticleForceRegistry::instance()->deleteForceRegistry(fG);
-				delete fG;
-				fGIT = forceGeneratorList.erase(fGIT);
-			}
-			else {
-				registry->addRegistry(fG, p);
-				fGIT++;
-			}
-
-		}
+		for(auto fG : forceGeneratorList) registry->addRegistry(fG, p);
 		if (!p->checkAlive()) { //Se comprueban si se ha acabado su tiempo de vida o han tocado el suelo
 			particlesToDeleteList.push_back(p);
 			it = particlesList.erase(it);
@@ -77,6 +64,17 @@ void ParticleSystem::integrate(double dt)
 		delete pG;
 	}
 	particlesGeneratorsToDeleteList.clear();
+
+	auto fGIT = forceGeneratorList.begin();
+	while (fGIT != forceGeneratorList.end()) {
+		auto fG = *fGIT;
+		if (fG->shouldDestroy()) { //Si el generador de fuerza se tiene que destruir, se elimina de la lista de generadores de fuerza
+			ParticleForceRegistry::instance()->deleteForceRegistry(fG);
+			delete fG;
+			fGIT = forceGeneratorList.erase(fGIT);
+		}
+		else fGIT++;
+	}
 }
 
 void ParticleSystem::addGenerator(ParticleGenerator* pG)
@@ -87,4 +85,5 @@ void ParticleSystem::addGenerator(ParticleGenerator* pG)
 void ParticleSystem::addForceGenerator(ForceGenerator* fG)
 {
 	forceGeneratorList.push_back(fG);
+	ParticleForceRegistry::instance()->addRegistry(fG);
 }

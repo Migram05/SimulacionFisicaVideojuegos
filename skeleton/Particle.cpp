@@ -11,8 +11,8 @@ Particle::Particle(particleInfo pI, ParticleGenerator* pG) : lifeTime(pI.lifeTim
 	pose = physx::PxTransform(pI.origin.x, pI.origin.y, pI.origin.z);
 	setParticleValues(pI);
 	
-	//mass = pow((realVelocity.magnitude() / velocity.magnitude()), 2) * pI.mass;
-	//invMass = 1 / mass;
+	mass = pow((realVelocity.magnitude() / velocity.magnitude()), 2) * pI.mass;
+	invMass = 1 / mass;
 	pInfoCopy = pI;
 	if (pG != nullptr) pSystem = pG->getSystem();
 }
