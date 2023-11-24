@@ -53,7 +53,7 @@ void Particle::integrate(double dt) //Calculos de velocidad
 bool Particle::checkAlive()
 {
 	//Comprueba que todavía le queda tiempo de vida y que no ha tocado el suelo y que no está demasiado lejos del origen
-	return (timeAlive < lifeTime && pose.p.y > 0 && (pose.p - origin).magnitude() <= maxDistance);
+	return (timeAlive < lifeTime && pose.p.y > -100 && (pose.p - origin).magnitude() <= maxDistance);
 }
 
 void Particle::addForce(Vector3 f)
