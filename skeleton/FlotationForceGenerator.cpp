@@ -22,6 +22,6 @@ void FlotationForceGenerator::updateForce(Particle* p, float dt)
 	else {
 		inmersed = (h0 - h) / height + 0.5;
 	}
-	f.y = density * abs(h0-h)* inmersed * -gravity;
+	f.y = density * inmersed * -gravity;
 	p->addForce(f);
 }

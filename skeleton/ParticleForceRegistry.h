@@ -24,5 +24,3 @@ public:
 	void deleteForceRegistry(class ForceGenerator* f);
 	void updateForces(float dt);
 };
-
-

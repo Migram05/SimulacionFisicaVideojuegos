@@ -8,7 +8,6 @@ TorbellinoGenerator::TorbellinoGenerator(Vector3 o,float V, float k1, float k2, 
 
 void TorbellinoGenerator::updateForce(Particle* p, float dt)
 {
-	
 	if (radius <= 0 || (p->getPos() - origin.p).magnitude() <= radius) {
 		if (fabs(p->getInvMass()) < 1e-10) return;
 		Vector3 pPose = p->getPos();

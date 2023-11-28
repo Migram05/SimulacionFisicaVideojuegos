@@ -12,7 +12,7 @@
 //#define MSTATIC
 //#define MMOVIL
 //#define SLINKY
-#define WATER
+//#define WATER
 Scene::Scene()
 {
 	camera = GetCamera();
@@ -21,7 +21,7 @@ Scene::Scene()
 	spawnParticleInfo = { camera->getEye(), camera->getDir(), 0.98, 5, 700,1, particleType::pT_Cannon,Vector4(1,0,0,1), CreateShape(physx::PxSphereGeometry(1))};
 #ifndef WATER
 	//Suelo
-	ground = new RenderItem(CreateShape(physx::PxBoxGeometry(5000, 1, 5000)), Vector4(0, 1, 1, 1));
+	ground = new RenderItem(CreateShape(physx::PxBoxGeometry(5000, 1, 5000)), Vector4(0, 1, 0, 1));
 #endif // !WATER
 #ifdef WATER
 	ground = new RenderItem(CreateShape(physx::PxBoxGeometry(5000, 0.1, 5000)), Vector4(0, 1, 1, 1));
@@ -39,20 +39,20 @@ Scene::Scene()
 	dGenerator = new ParticleDragGenerator(Vector3(10, 100, 0), 1, 0);
 	tGenerator = new TorbellinoGenerator(Vector3(0, 50, 0),5, 2, 0, 1000);
 	
-	/*particleInfo newInfo = {Vector3(0,0,0), Vector3(0,1,0), 0.98, 50, 1000,0.5, particleType::pT_custom,Vector4(0.15f,0.15f,0.2f,1), CreateShape(physx::PxSphereGeometry(1)), false, 0};
+	particleInfo newInfo = {Vector3(0,0,0), Vector3(0,1,0), 0.98, 50, 1000,0.5, particleType::pT_custom,Vector4(0.15f,0.15f,0.2f,1), CreateShape(physx::PxSphereGeometry(1)), false, 0};
 	auto forcesParticleGenerator = new GaussianParticleGenerator(pSystem[1], "GFuerzas", Vector3(50, 80, 0), newInfo, 5, 1, false);
 	forcesPS->addGenerator(forcesParticleGenerator);
 
 	particleInfo newInfo2 = { Vector3(0,0,0), Vector3(0,1,0), 0.98, 50, 1000,0.5, particleType::pT_custom,Vector4(1,1,1,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
 	auto forcesParticleGenerator2 = new GaussianParticleGenerator(pSystem[1], "GFuerzas2", Vector3(50, 80, 0), newInfo2, 5, 1, false);
-	forcesPS->addGenerator(forcesParticleGenerator2);*/
+	forcesPS->addGenerator(forcesParticleGenerator2);
 	
 	if (tGenerator) forcesPS->addForceGenerator(tGenerator);
 	if (dGenerator) forcesPS->addForceGenerator(dGenerator);
 	if (gGenerator) forcesPS->addForceGenerator(gGenerator);
 #ifdef WATER
 	if (gGenerator) {
-		fGenerator = new FlotationForceGenerator(Vector3(0, 0, 0), 1, gGenerator->getGravity().y);
+		fGenerator = new FlotationForceGenerator(Vector3(0, 0, 0), 1000, gGenerator->getGravity().y);
 		forcesPS->addForceGenerator(fGenerator);
 	}
 #endif // WATER
@@ -93,7 +93,7 @@ Scene::Scene()
 #endif
 #ifdef SLINKY
 	Vector3 spawnPos = camera->getEye() + (camera->getDir() * 15) +Vector3(0,15,0);
-	float separation = 5;
+	float separation = 15;
 	particleInfo slinkyPInfo1 = { spawnPos, Vector3(0,1,0), 0.98, 50, 1000,0.2,particleType::pT_custom,Vector4(1,0,0,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
 	Particle* p = new Particle(slinkyPInfo1);
 	particlesList.push_back(p);
@@ -159,8 +159,8 @@ void Scene::keyPress(unsigned char key)
 		case '2':
 		{
 			if (particlesList.size() > maxParticleCount ||!gGenerator) break;
-			particleInfo waterParticle = { camera->getEye() + (camera->getDir() * 15) + Vector3(0,20,0), Vector3(0,1,0), 0.98, 50, 1000,1, particleType::pT_custom,Vector4(1,0,0,1), CreateShape(physx::PxBoxGeometry(1,1,1)), false, 0};
-			Particle* p = new Particle(waterParticle);
+			particleInfo waterCube = { camera->getEye() + (camera->getDir() * 15) + Vector3(0,20,0), Vector3(0,1,0), 0.5, 50, 100,999, particleType::pT_custom,Vector4(1,0,0,1), CreateShape(physx::PxBoxGeometry(1,1,1)), false, 0};
+			Particle* p = new Particle(waterCube);
 			particlesList.push_back(p);
 			if (gGenerator) {
 				registry->addRegistry(gGenerator, p);
@@ -219,7 +219,7 @@ void Scene::keyPress(unsigned char key)
 			spawnParticleInfo.velocity = camera->getDir();
 			spawnParticleInfo.origin = camera->getEye();
 			spawnParticleInfo.lifeTime = 1;
-			spawnParticleInfo.mass = 0.1;
+			spawnParticleInfo.mass = 10;
 			Particle* p = new Particle(spawnParticleInfo);
 			particlesList.push_back(p);
 			if(gGenerator) registry->addRegistry(gGenerator, p);
