@@ -9,7 +9,7 @@
 #include "SpringForceGenerator.h"
 #include "ElasticBandForceGenerator.h"
 #include "FlotationForceGenerator.h"
-//#define MSTATIC
+#define MSTATIC
 //#define MMOVIL
 //#define SLINKY
 //#define WATER
@@ -39,13 +39,13 @@ Scene::Scene()
 	dGenerator = new ParticleDragGenerator(Vector3(10, 100, 0), 1, 0);
 	tGenerator = new TorbellinoGenerator(Vector3(0, 50, 0),5, 2, 0, 1000);
 	
-	particleInfo newInfo = {Vector3(0,0,0), Vector3(0,1,0), 0.98, 50, 1000,0.5, particleType::pT_custom,Vector4(0.15f,0.15f,0.2f,1), CreateShape(physx::PxSphereGeometry(1)), false, 0};
+	/*particleInfo newInfo = {Vector3(0,0,0), Vector3(0,1,0), 0.98, 50, 1000,0.5, particleType::pT_custom,Vector4(0.15f,0.15f,0.2f,1), CreateShape(physx::PxSphereGeometry(1)), false, 0};
 	auto forcesParticleGenerator = new GaussianParticleGenerator(pSystem[1], "GFuerzas", Vector3(50, 80, 0), newInfo, 5, 1, false);
 	forcesPS->addGenerator(forcesParticleGenerator);
 
 	particleInfo newInfo2 = { Vector3(0,0,0), Vector3(0,1,0), 0.98, 50, 1000,0.5, particleType::pT_custom,Vector4(1,1,1,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
 	auto forcesParticleGenerator2 = new GaussianParticleGenerator(pSystem[1], "GFuerzas2", Vector3(50, 80, 0), newInfo2, 5, 1, false);
-	forcesPS->addGenerator(forcesParticleGenerator2);
+	forcesPS->addGenerator(forcesParticleGenerator2);*/
 	
 	if (tGenerator) forcesPS->addForceGenerator(tGenerator);
 	if (dGenerator) forcesPS->addForceGenerator(dGenerator);
@@ -149,7 +149,15 @@ void Scene::keyPress(unsigned char key)
 	switch(key){
 		case '1':
 		{
-			auto springExplosion = new ExplosionForceGenerator(camera->getEye() + (camera->getDir() * 15), 100000, 10, false);
+			float explosionV;
+#ifdef WATER
+			explosionV = 20000000;
+#endif // WATER
+#ifndef WATER
+			explosionV = 100000;
+#endif // !WATER
+
+			auto springExplosion = new ExplosionForceGenerator(camera->getEye() + (camera->getDir() * 15), explosionV, 10, false);
 			forcesPS->addForceGenerator(springExplosion);
 			for (auto p : particlesList) {
 				registry->addRegistry(springExplosion, p);
@@ -159,7 +167,7 @@ void Scene::keyPress(unsigned char key)
 		case '2':
 		{
 			if (particlesList.size() > maxParticleCount ||!gGenerator) break;
-			particleInfo waterCube = { camera->getEye() + (camera->getDir() * 15) + Vector3(0,20,0), Vector3(0,1,0), 0.5, 50, 100,999, particleType::pT_custom,Vector4(1,0,0,1), CreateShape(physx::PxBoxGeometry(1,1,1)), false, 0};
+			particleInfo waterCube = { camera->getEye() + (camera->getDir() * 15) + Vector3(0,20,0), Vector3(0,1,0), 0.5, 50, 100,500, particleType::pT_custom,Vector4(1,0,0,1), CreateShape(physx::PxBoxGeometry(1,1,1)), false, 0};
 			Particle* p = new Particle(waterCube);
 			particlesList.push_back(p);
 			if (gGenerator) {
@@ -172,12 +180,26 @@ void Scene::keyPress(unsigned char key)
 			break;
 		}
 		case '+' :{
-			sGenerator->setK(sGenerator->getK() + 0.5);
+			if(sGenerator) sGenerator->setK(sGenerator->getK() + 0.5); //Aumentamos la K del muelle, si hay
+#ifdef WATER
+			for (auto p : particlesList) {
+				p->setMass(p->getMass() + 5);
+			}
+#endif // WATER
+
 			break;
 		}
 		case '-': {
-			sGenerator->setK(sGenerator->getK() - 0.5);
-			if (sGenerator->getK() < 0) sGenerator->setK(0);
+			if (sGenerator) { //Disminuimos la K
+				sGenerator->setK(sGenerator->getK() - 0.5);
+				if (sGenerator->getK() < 0) sGenerator->setK(0);
+			}
+#ifdef WATER
+			for (auto p : particlesList) {
+				if(p->getMass() >= 5) p->setMass(p->getMass() - 5);
+			}
+#endif // WATER
+
 			break;
 		}
 		case '3':

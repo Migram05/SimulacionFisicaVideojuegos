@@ -39,6 +39,7 @@ public:
 	inline Vector3 getPos() { return Vector3(pose.p.x, pose.p.y, pose.p.z); }
 	inline Vector3 getTotalForce() { return totalForce; }
 	inline physx::PxShape* getShape() { return shape; }
+	inline void setMass(float nMass) { mass = nMass; invMass = 1 / mass; }
 protected:
 	void setParticleValues(const particleInfo i);
 	Vector3 velocity;
