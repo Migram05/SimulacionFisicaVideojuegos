@@ -8,6 +8,8 @@
 #include "RenderUtils.hpp"
 #include "callbacks.hpp"
 #include "Scene.h"
+#include "RigidBodyGenerator.h"
+#define PRACTICA5
 
 std::string display_text = "Practica Sim. Fis. 3ºV Miguel Ramirez";
 
@@ -24,6 +26,9 @@ PxPvd*                  gPvd        = NULL;
 PxDefaultCpuDispatcher*	gDispatcher = NULL;
 PxScene*				gScene      = NULL;
 ContactReportCallback gContactReportCallback;
+vector<PxRigidDynamic*> rbVector;
+
+RigidBodyGenerator* RBGenerator;
 
 Scene* currentScene;
 
@@ -50,7 +55,22 @@ void initPhysics(bool interactive)
 	sceneDesc.filterShader = contactReportFilterShader;
 	sceneDesc.simulationEventCallback = &gContactReportCallback;
 	gScene = gPhysics->createScene(sceneDesc);
+#ifndef PRACTICA5
 	currentScene = new Scene(); //Creación de la escena
+#endif // !PRACTICA5
+#ifdef PRACTICA5
+	//ajustamos la cámara
+	Camera* camera = GetCamera();
+	camera->setPosition({ -20, 15,0 });
+	//Creación del suelo
+	PxRigidStatic* suelo = gPhysics->createRigidStatic(PxTransform(0, 0, 0));
+	PxShape* forma = CreateShape(PxBoxGeometry(500, 0.1, 500));
+	suelo->attachShape(*forma);
+	gScene->addActor(*suelo);
+	RenderItem* item = new RenderItem(forma, suelo, { 1,1,1,1 });
+	RBGenerator = new RigidBodyGenerator({ 0,10,0 },gPhysics, 1000);
+	
+#endif // PRACTICA5
 }
 
 
@@ -63,7 +83,32 @@ void stepPhysics(bool interactive, double t)
 
 	gScene->simulate(t);
 	gScene->fetchResults(true);
+#ifndef PRACTICA5
 	currentScene->integrate(t);
+#endif // !PRACTICA5
+#ifdef PRACTICA5
+	if (RBGenerator != nullptr) {
+		PxRigidDynamic* RB = RBGenerator->generateRigidBody();
+		rbVector.push_back(RB);
+		if (RB == nullptr) {
+			delete RBGenerator;
+			RBGenerator = nullptr;
+		}
+		else {
+			PxShape* ShapeAD;
+			int r = rand() % 2;
+			if(r == 0) ShapeAD = CreateShape(PxBoxGeometry(2, 2, 2));
+			else ShapeAD = CreateShape(PxSphereGeometry(2));
+			RB->attachShape(*ShapeAD);
+			PxReal density = rand() % 10; density++;
+			PxRigidBodyExt::updateMassAndInertia(*RB, density);
+			gScene->addActor(*RB);
+			RenderItem* dynamicSolid;
+			dynamicSolid = new RenderItem(ShapeAD, RB, { (float)density/10,(float)density / 10,(float)density / 10,1});
+		}
+	}
+#endif // PRACTICA5
+
 }
 
 // Function to clean data
@@ -73,7 +118,12 @@ void cleanupPhysics(bool interactive)
 	PX_UNUSED(interactive);
 
 	// Rigid Body ++++++++++++++++++++++++++++++++++++++++++
+#ifdef PRACTICA5
+	if (RBGenerator != nullptr) delete RBGenerator;
+#endif // PRACTICA5
+#ifndef PRACTICA5
 	delete currentScene; //Se borra nuestra escena
+#endif
 	gScene->release();
 	gDispatcher->release();
 	// -----------------------------------------------------
@@ -85,17 +135,44 @@ void cleanupPhysics(bool interactive)
 	gFoundation->release();
 }
 
+
+void generateExplosion() {
+	PxTransform origin = { GetCamera()->getEye().x,GetCamera()->getEye().y,GetCamera()->getEye().z };
+	for (auto rb : rbVector) {
+		if (rb != nullptr) {
+			float distancia = (rb->getGlobalPose().p - origin.p).magnitude();
+			if (distancia <= 200) {
+				Vector3 posiciones(rb->getGlobalPose().p.x - origin.p.x, rb->getGlobalPose().p.y - origin.p.y, rb->getGlobalPose().p.z - origin.p.z);
+				Vector3 explosionForce((100000000 / pow(distancia, 2.f)) * posiciones);
+				rb->addForce(explosionForce);
+			}
+		}
+	}
+}
+
 // Function called when a key is pressed
 void keyPress(unsigned char key, const PxTransform& camera)
 {
 	PX_UNUSED(camera);
 	switch(toupper(key))
 	{
-		default:
-			currentScene->keyPress(key); //Se llama al método key press de la escena
-			break;
+#ifdef PRACTICA5
+	case ' ': {
+		generateExplosion();
+		break;
+	}
+	default: break;
+#endif // PRACTICA5
+#ifndef PRACTICA5
+	default:
+		currentScene->keyPress(key); //Se llama al método key press de la escena
+		break;
+#endif // !PRACTICA5
+
+		
 	}
 }
+
 
 void onCollision(physx::PxActor* actor1, physx::PxActor* actor2)
 {
