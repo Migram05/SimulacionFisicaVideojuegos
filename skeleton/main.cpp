@@ -3,12 +3,16 @@
 #include <PxPhysicsAPI.h>
 
 #include <vector>
-
+#include <iostream>
 #include "core.hpp"
 #include "RenderUtils.hpp"
 #include "callbacks.hpp"
 #include "Scene.h"
 #include "RigidBodyGenerator.h"
+
+#include "RBForceGenerator.h"
+#include "RBFlotationForceGenerator.h"
+
 #define PRACTICA5
 
 std::string display_text = "Practica Sim. Fis. 3ºV Miguel Ramirez";
@@ -31,6 +35,9 @@ vector<PxRigidDynamic*> rbVector;
 RigidBodyGenerator* RBGenerator;
 
 Scene* currentScene;
+
+RBFlotationForceGenerator* RBWaterForceGenerator;
+bool waterSimulationActive = false;
 
 // Initialize physics engine
 void initPhysics(bool interactive)
@@ -70,6 +77,7 @@ void initPhysics(bool interactive)
 	RenderItem* item = new RenderItem(forma, suelo, { 1,1,1,1 });
 	RBGenerator = new RigidBodyGenerator({ 0,10,0 },gPhysics, 1000);
 	
+	RBWaterForceGenerator = new RBFlotationForceGenerator({ 0,20,0 }, 50, sceneDesc.gravity.y, 7);
 #endif // PRACTICA5
 }
 
@@ -97,14 +105,18 @@ void stepPhysics(bool interactive, double t)
 		else {
 			PxShape* ShapeAD;
 			int r = rand() % 2;
-			if(r == 0) ShapeAD = CreateShape(PxBoxGeometry(2, 2, 2));
-			else ShapeAD = CreateShape(PxSphereGeometry(2));
+			ShapeAD = CreateShape(PxBoxGeometry(1, 1, 1));
 			RB->attachShape(*ShapeAD);
 			PxReal density = rand() % 10; density++;
 			PxRigidBodyExt::updateMassAndInertia(*RB, density);
 			gScene->addActor(*RB);
 			RenderItem* dynamicSolid;
-			dynamicSolid = new RenderItem(ShapeAD, RB, { (float)density/10,(float)density / 10,(float)density / 10,1});
+			dynamicSolid = new RenderItem(ShapeAD, RB, { (float)(10-density)/10,(float)(10 - density) / 10,(float)(10 - density) / 10,1});
+		}
+	}
+	if (waterSimulationActive) {
+		for (auto rb : rbVector) {
+			RBWaterForceGenerator->updateForce(rb);
 		}
 	}
 #endif // PRACTICA5
@@ -143,7 +155,7 @@ void generateExplosion() {
 			float distancia = (rb->getGlobalPose().p - origin.p).magnitude();
 			if (distancia <= 200) {
 				Vector3 posiciones(rb->getGlobalPose().p.x - origin.p.x, rb->getGlobalPose().p.y - origin.p.y, rb->getGlobalPose().p.z - origin.p.z);
-				Vector3 explosionForce((100000000 / pow(distancia, 2.f)) * posiciones);
+				Vector3 explosionForce((1000000 / pow(distancia, 2.f)) * posiciones);
 				rb->addForce(explosionForce);
 			}
 		}
@@ -154,11 +166,15 @@ void generateExplosion() {
 void keyPress(unsigned char key, const PxTransform& camera)
 {
 	PX_UNUSED(camera);
-	switch(toupper(key))
+	switch(key)
 	{
 #ifdef PRACTICA5
 	case ' ': {
 		generateExplosion();
+		break;
+	}
+	case 'f': {
+		waterSimulationActive = !waterSimulationActive;
 		break;
 	}
 	default: break;

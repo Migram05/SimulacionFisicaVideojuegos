@@ -16,7 +16,7 @@ PxRigidDynamic* RigidBodyGenerator::generateRigidBody()
 	generatedNum++;
 	PxRigidDynamic* newSolid;
 	newSolid = physics->createRigidDynamic(PxTransform(transform.p.x + (rand()%21 -10), transform.p.y + (rand() % 21 - 10), transform.p.z + (rand() % 21 - 10)));
-	newSolid->setLinearVelocity({ 0,50,0 });
+	newSolid->setLinearVelocity({ 0,10,0 });
 	newSolid->setAngularVelocity({ 0,0,0 });
 	return newSolid;
 }
