@@ -166,6 +166,7 @@ void Scene::keyPress(unsigned char key)
 		}
 		case '2':
 		{
+#ifdef WATER
 			if (particlesList.size() > maxParticleCount ||!gGenerator) break;
 			particleInfo waterCube = { camera->getEye() + (camera->getDir() * 15) + Vector3(0,20,0), Vector3(0,1,0), 0.5, 50, 100,500, particleType::pT_custom,Vector4(1,0,0,1), CreateShape(physx::PxBoxGeometry(1,1,1)), false, 0};
 			Particle* p = new Particle(waterCube);
@@ -177,6 +178,7 @@ void Scene::keyPress(unsigned char key)
 			if (dGenerator) {
 				registry->addRegistry(dGenerator, p);
 			}
+#endif
 			break;
 		}
 		case '+' :{

@@ -6,6 +6,11 @@ RBFlotationForceGenerator::RBFlotationForceGenerator(Vector3 o, float d, float g
 
 }
 
+RBFlotationForceGenerator::~RBFlotationForceGenerator()
+{
+	std::cout << "Sistema de flotacion de Rigid body destruido\n";
+}
+
 void RBFlotationForceGenerator::updateForce(physx::PxRigidDynamic* p)
 {
 	if (p == nullptr) return;

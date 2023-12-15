@@ -75,7 +75,7 @@ void initPhysics(bool interactive)
 	suelo->attachShape(*forma);
 	gScene->addActor(*suelo);
 	RenderItem* item = new RenderItem(forma, suelo, { 1,1,1,1 });
-	RBGenerator = new RigidBodyGenerator({ 0,10,0 },gPhysics, 1000);
+	RBGenerator = new RigidBodyGenerator({ 0,10,0 },gPhysics, 200);
 	
 	RBWaterForceGenerator = new RBFlotationForceGenerator({ 0,20,0 }, 50, sceneDesc.gravity.y, 7);
 #endif // PRACTICA5
@@ -112,6 +112,7 @@ void stepPhysics(bool interactive, double t)
 			gScene->addActor(*RB);
 			RenderItem* dynamicSolid;
 			dynamicSolid = new RenderItem(ShapeAD, RB, { (float)(10-density)/10,(float)(10 - density) / 10,(float)(10 - density) / 10,1});
+			RB->setMassSpaceInertiaTensor({ 1,1,1 });
 		}
 	}
 	if (waterSimulationActive) {
@@ -132,6 +133,15 @@ void cleanupPhysics(bool interactive)
 	// Rigid Body ++++++++++++++++++++++++++++++++++++++++++
 #ifdef PRACTICA5
 	if (RBGenerator != nullptr) delete RBGenerator;
+	delete RBWaterForceGenerator;
+	int nRBDestruidos = 0;
+	for (auto rb : rbVector) {
+		if (rb) {
+			rb->release();
+			nRBDestruidos++;
+		}
+	}
+	std::cout << "Se han destruido todos los rigid body: " << nRBDestruidos << " destruidos\n";
 #endif // PRACTICA5
 #ifndef PRACTICA5
 	delete currentScene; //Se borra nuestra escena
