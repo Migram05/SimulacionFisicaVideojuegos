@@ -18,7 +18,7 @@ class Scene
 	particleInfo spawnParticleInfo;
 	vector< ParticleSystem*> pSystem;
 	ParticleSystem* fireworkPS;
-	RenderItem* ground;
+	
 	ParticleForceRegistry* registry;
 	ParticleSystem* forcesPS;
 	class GravityGenerator* gGenerator = nullptr;
@@ -26,10 +26,30 @@ class Scene
 	class TorbellinoGenerator* tGenerator = nullptr;
 	class SpringForceGenerator* sGenerator = nullptr;
 	class FlotationForceGenerator* fGenerator = nullptr;
+
+	PxPhysics* gPhysics;
+	PxScene* gScene;
+
+	PxRigidStatic* ground;
+	PxRigidDynamic* catapulta1;
+	PxRigidDynamic* catapulta2;
+
+	Particle* springParticle;
+	Particle* spring1;
+	Particle* spring2;
+
+	float currentTime = 0;
+	float startAttackTime;
+	float maxAttackChargeTime = 2;
+	float intensidad;
+	bool attackPressed = false;
+
+	void shoot(float intensity);
 public:
-	Scene();
+	Scene(PxPhysics* gP, PxScene* gS);
 	~Scene();
 	void keyPress(unsigned char key);
+	void mousePress(int button, int state);
 	void integrate(float dt);
 };
 

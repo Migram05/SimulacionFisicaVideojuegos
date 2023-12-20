@@ -76,7 +76,7 @@ void Particle::setParticleValues(const particleInfo i)
 		velocity = i.velocity * 200;
 		realVelocity = i.velocity * 250;
 		shape = CreateShape(physx::PxSphereGeometry(1));
-		renderItem = new RenderItem(shape, &pose, Vector4(1, 0, 0, 1));
+		renderItem = new RenderItem(shape, &pose, Vector4(0.5, 0.5, 0.5, 1));
 		break;
 	}
 	case pT_Bullet: 

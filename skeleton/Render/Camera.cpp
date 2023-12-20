@@ -32,6 +32,7 @@
 #include "Camera.h"
 #include <ctype.h>
 #include "foundation/PxMat33.h"
+#include <iostream>
 
 using namespace physx;
 
@@ -45,7 +46,7 @@ Camera::Camera(const PxVec3& eye, const PxVec3& dir)
 	mMouseX = 0;
 	mMouseY = 0;
 
-	//Rotación de la catapulta
+	//Rotación inicial de la catapulta
 	PxVec3 viewY = mDir.cross(PxVec3(0, 1, 0)).getNormalized();
 	PxQuat qy(PxPi * -25 / 180.0f, viewY);
 	mDir = qy.rotate({1,0,0});
@@ -57,35 +58,49 @@ void Camera::handleMouse(int button, int state, int x, int y)
 	PX_UNUSED(button);
 	mMouseX = x;
 	mMouseY = y;
+	
 }
 
 bool Camera::handleKey(unsigned char key, int x, int y, float speed)
 {
 	PX_UNUSED(x);
 	PX_UNUSED(y);
-
+	
 	PxVec3 viewY = mDir.cross(PxVec3(0,1,0)).getNormalized();
 	switch(toupper(key))
 	{
 	//case 'W':	mEye += mDir*2.0f*speed;		break;
 	//case 'S':	mEye -= mDir*2.0f*speed;		break;
-	//case 'A':	mEye -= viewY*2.0f*speed;		break;
-	//case 'D':	mEye += viewY*2.0f*speed;		break;
-	default:							return false;
+	/*case 'A': {
+		PxQuat qx(PxPi * catapultRotationSpeed / 180.0f, PxVec3(0, 1, 0));
+		mDir = qx.rotate(mDir);
+		break; 
+	}
+	case 'D': {
+		
+	}*/
+	default: return false;
 	}
 	return true;
 }
 
 void Camera::handleAnalogMove(float x, float y)
 {
-	PxVec3 viewY = mDir.cross(PxVec3(0,1,0)).getNormalized();
+	/*PxVec3 viewY = mDir.cross(PxVec3(0,1,0)).getNormalized();
 	mEye += mDir*y;
-	mEye += viewY*x;
+	mEye += viewY*x;*/
+}
+
+void Camera::move(int direction) //Movimiento lateral de la cámara
+{
+	//El parámetro "direction" determina si se va a mover hacia la izq o derecha
+	PxQuat qx(PxPi * direction * catapultRotationSpeed / 180.0f, PxVec3(0, 1, 0));
+	mDir = qx.rotate(mDir);
 }
 
 void Camera::handleMotion(int x, int y)
 {
-	int dx = mMouseX - x;
+	/*int dx = mMouseX - x;
 	int dy = mMouseY - y;
 	dy = 0;
 
@@ -99,7 +114,7 @@ void Camera::handleMotion(int x, int y)
 	mDir.normalize();
 
 	mMouseX = x;
-	mMouseY = y;
+	mMouseY = y;*/
 }
 
 PxTransform Camera::getTransform() const

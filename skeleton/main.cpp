@@ -1,4 +1,4 @@
-#include <ctype.h>
+ï»¿#include <ctype.h>
 
 #include <PxPhysicsAPI.h>
 
@@ -15,7 +15,7 @@
 
 //#define PRACTICA5
 
-std::string display_text = "Proyecto Final Sim. Fis. 3ºV Miguel Ramirez";
+std::string display_text = "";
 
 
 using namespace physx;
@@ -63,13 +63,13 @@ void initPhysics(bool interactive)
 	sceneDesc.simulationEventCallback = &gContactReportCallback;
 	gScene = gPhysics->createScene(sceneDesc);
 #ifndef PRACTICA5
-	currentScene = new Scene(); //Creación de la escena
+	currentScene = new Scene(gPhysics, gScene); //CreaciÃ³n de la escena
 #endif // !PRACTICA5
 #ifdef PRACTICA5
-	//ajustamos la cámara
+	//ajustamos la cÃ¡mara
 	Camera* camera = GetCamera();
 	camera->setPosition({ -20, 15,0 });
-	//Creación del suelo
+	//CreaciÃ³n del suelo
 	PxRigidStatic* suelo = gPhysics->createRigidStatic(PxTransform(0, 0, 0));
 	PxShape* forma = CreateShape(PxBoxGeometry(500, 0.1, 500));
 	suelo->attachShape(*forma);
@@ -166,27 +166,11 @@ void generateExplosion() {
 void keyPress(unsigned char key, const PxTransform& camera)
 {
 	PX_UNUSED(camera);
-	switch(key)
-	{
-#ifdef PRACTICA5
-	case ' ': {
-		generateExplosion();
-		break;
-	}
-	case 'f': {
-		waterSimulationActive = !waterSimulationActive;
-		break;
-	}
-	default: break;
-#endif // PRACTICA5
-#ifndef PRACTICA5
-	default:
-		currentScene->keyPress(key); //Se llama al método key press de la escena
-		break;
-#endif // !PRACTICA5
+	currentScene->keyPress(key); //Se llama al mÃ©todo key press de la escena
+}
 
-		
-	}
+void mousePress(int button, int state) {
+	currentScene->mousePress(button, state);
 }
 
 

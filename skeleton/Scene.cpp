@@ -1,4 +1,4 @@
-#include "Scene.h"
+ï»¿#include "Scene.h"
 #include <iostream>
 #include "GaussianParticleGenerator.h"
 #include "UniformParticleGenerator.h"
@@ -9,26 +9,76 @@
 #include "SpringForceGenerator.h"
 #include "ElasticBandForceGenerator.h"
 #include "FlotationForceGenerator.h"
-#define MSTATIC
+
+//#define MSTATIC
 //#define MMOVIL
 //#define SLINKY
 //#define WATER
-Scene::Scene()
+Scene::Scene(PxPhysics* gP, PxScene* gS)
 {
+	//CÃ¡mara
+	gPhysics = gP; gScene = gS;
 	camera = GetCamera();
+	camera->setPosition(physx::PxVec3(0, 10, 0));
+
+	//Generadores de fuerza
+	registry = ParticleForceRegistry::instance();
+	forcesPS = new ParticleSystem(Vector3(0, 40, 0), Vector3(0, 1, 0));
+	pSystem.push_back(forcesPS);
+
+	gGenerator = new GravityGenerator(Vector3(10, 80, 0), Vector3(0, -98, 0));
+	dGenerator = new ParticleDragGenerator(Vector3(10, 100, 0), 1, 0);
+	//tGenerator = new TorbellinoGenerator(Vector3(0, 50, 0), 5, 2, 0, 1000);
+	//if (tGenerator) forcesPS->addForceGenerator(tGenerator);
+	if (dGenerator) forcesPS->addForceGenerator(dGenerator);
+	if (gGenerator) forcesPS->addForceGenerator(gGenerator);
+
+
+	ground = gPhysics->createRigidStatic(PxTransform(0, 0, 0));
+	PxShape* forma = CreateShape(PxBoxGeometry(500, 0.1, 500));
+	ground->attachShape(*forma);
+	gScene->addActor(*ground);
+	RenderItem* item = new RenderItem(forma, ground, { 0, 1, 0.25, 1 });
+
+	catapulta1 = gPhysics->createRigidDynamic(PxTransform(GetCamera()->getEye() + PxVec3(1.2, 0, 0.5)));
+	PxShape* c1 = CreateShape(PxBoxGeometry(0.1, 0.4, 0.1));
+	catapulta1->attachShape(*c1);
+	gScene->addActor(*catapulta1);
+	RenderItem* r1 = new RenderItem(c1, catapulta1, { 1,1, 1, 1 });
 	
-	//Crea la información para generar un proyectil por defecto
-	spawnParticleInfo = { camera->getEye(), camera->getDir(), 0.98, 5, 700,1, particleType::pT_Cannon,Vector4(1,0,0,1), CreateShape(physx::PxSphereGeometry(1))};
+
+	catapulta2 = gPhysics->createRigidDynamic(PxTransform(GetCamera()->getEye() + PxVec3(1.2, 0, -0.5)));
+	PxShape* c2 = CreateShape(PxBoxGeometry(0.1, 0.4, 0.1));
+	catapulta2->attachShape(*c2);
+	gScene->addActor(*catapulta2);
+	RenderItem* r2 = new RenderItem(c2, catapulta2, { 1, 1, 1, 1 });
+
+	particleInfo SInfo = { GetCamera()->getEye() + PxVec3(1.2, 0.25, -0.5), Vector3(0,1,0), 0.98, 50, 1000,0, particleType::pT_custom,Vector4(0,0,0,1), CreateShape(physx::PxBoxGeometry(0.05, 0.05, 0.05)), false, 0 };
+	spring1 = new Particle(SInfo);
+
+	particleInfo SInfo2 = { GetCamera()->getEye() + PxVec3(1.2, 0.25, 0.5), Vector3(0,1,0), 0.98, 50, 1000,0, particleType::pT_custom,Vector4(0,0,0,1), CreateShape(physx::PxBoxGeometry(0.05, 0.05, 0.05)), false, 0 };
+	spring2 = new Particle(SInfo2);
+
+	particleInfo SpringInfo = { GetCamera()->getEye() + PxVec3(1.2, 0, 0), Vector3(0,1,0), 0.98, 50, 1000,0.1, particleType::pT_custom,Vector4(0.5,0,0,1), CreateShape(physx::PxSphereGeometry(0.08)), false, 0 };
+	springParticle = new Particle(SpringInfo);
+	particlesList.push_back(springParticle);
+	sGenerator = new SpringForceGenerator(spring1, 25, 0.01);
+	auto sGenerator2 = new SpringForceGenerator(spring2, 25, 0.01);
+	if (gGenerator) registry->addRegistry(gGenerator, springParticle);
+	if (dGenerator) registry->addRegistry(dGenerator, springParticle);
+	registry->addRegistry(sGenerator, springParticle);
+	registry->addRegistry(sGenerator2, springParticle);
+
 #ifndef WATER
 	//Suelo
-	ground = new RenderItem(CreateShape(physx::PxBoxGeometry(5000, 1, 5000)), Vector4(0, 1, 0, 1));
+	//ground = new RenderItem(CreateShape(physx::PxBoxGeometry(5000, 1, 5000)), Vector4(0, 1, 0.25, 1));
 #endif // !WATER
 #ifdef WATER
 	ground = new RenderItem(CreateShape(physx::PxBoxGeometry(5000, 0.1, 5000)), Vector4(0, 1, 1, 1));
-	camera->setPosition(physx::PxVec3(camera->getEye().x, 10, camera->getEye().z));
+	
 #endif // WATER
 
-	fireworkPS = new ParticleSystem(Vector3(0, 40, 0), Vector3(0, 1, 0));
+	/*fireworkPS = new ParticleSystem(Vector3(0, 40, 0), Vector3(0, 1, 0));
 	pSystem.push_back(fireworkPS);
 
 	forcesPS = new ParticleSystem(Vector3(0, 40, 0), Vector3(0, 1, 0));
@@ -45,11 +95,12 @@ Scene::Scene()
 
 	particleInfo newInfo2 = { Vector3(0,0,0), Vector3(0,1,0), 0.98, 50, 1000,0.5, particleType::pT_custom,Vector4(1,1,1,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
 	auto forcesParticleGenerator2 = new GaussianParticleGenerator(pSystem[1], "GFuerzas2", Vector3(50, 80, 0), newInfo2, 5, 1, false);
-	forcesPS->addGenerator(forcesParticleGenerator2);*/
+	forcesPS->addGenerator(forcesParticleGenerator2);
 	
 	if (tGenerator) forcesPS->addForceGenerator(tGenerator);
 	if (dGenerator) forcesPS->addForceGenerator(dGenerator);
 	if (gGenerator) forcesPS->addForceGenerator(gGenerator);
+	*/
 #ifdef WATER
 	if (gGenerator) {
 		fGenerator = new FlotationForceGenerator(Vector3(0, 0, 0), 1000, gGenerator->getGravity().y);
@@ -142,122 +193,66 @@ Scene::~Scene()
 		delete pt;
 	}
 	for (ParticleSystem* pS : pSystem) delete pS;
+
+	ground->release();
+	catapulta1->release();
+	catapulta2->release();
+	delete spring1;
+	delete spring2;
 }
 
 void Scene::keyPress(unsigned char key)
 {
 	switch(key){
-		case '1':
-		{
-			float explosionV;
-#ifdef WATER
-			explosionV = 20000000;
-#endif // WATER
-#ifndef WATER
-			explosionV = 100000;
-#endif // !WATER
-
-			auto springExplosion = new ExplosionForceGenerator(camera->getEye() + (camera->getDir() * 15), explosionV, 10, false);
-			forcesPS->addForceGenerator(springExplosion);
-			for (auto p : particlesList) {
-				registry->addRegistry(springExplosion, p);
-			}
+		case 'a': {
+			GetCamera()->move(1);
 			break;
 		}
-		case '2':
-		{
-			if (particlesList.size() > maxParticleCount ||!gGenerator) break;
-			particleInfo waterCube = { camera->getEye() + (camera->getDir() * 15) + Vector3(0,20,0), Vector3(0,1,0), 0.5, 50, 100,500, particleType::pT_custom,Vector4(1,0,0,1), CreateShape(physx::PxBoxGeometry(1,1,1)), false, 0};
-			Particle* p = new Particle(waterCube);
-			particlesList.push_back(p);
-			if (gGenerator) {
-				registry->addRegistry(gGenerator, p);
-				registry->addRegistry(fGenerator, p);
-			}
-			if (dGenerator) {
-				registry->addRegistry(dGenerator, p);
-			}
-			break;
-		}
-		case '+' :{
-			if(sGenerator) sGenerator->setK(sGenerator->getK() + 0.5); //Aumentamos la K del muelle, si hay
-#ifdef WATER
-			for (auto p : particlesList) {
-				p->setMass(p->getMass() + 5);
-			}
-#endif // WATER
-
-			break;
-		}
-		case '-': {
-			if (sGenerator) { //Disminuimos la K
-				sGenerator->setK(sGenerator->getK() - 0.5);
-				if (sGenerator->getK() < 0) sGenerator->setK(0);
-			}
-#ifdef WATER
-			for (auto p : particlesList) {
-				if(p->getMass() >= 5) p->setMass(p->getMass() - 5);
-			}
-#endif // WATER
-
-			break;
-		}
-		case '3':
-		{
-			/*spawnParticleInfo.type = pT_custom; spawnParticleInfo.color = { 0,1,1,1 }; spawnParticleInfo.geometry = CreateShape(physx::PxSphereGeometry(1));
-			spawnParticleInfo.velocity = { 0,35,0 }; spawnParticleInfo.lifeTime = 3;
-			spawnParticleInfo.origin = { 10,40,10 };
-			particlesList.push_back(new Firework(spawnParticleInfo, fireworkPS));*/
-			break;
-		}
-		case '4':
-		{
-			/*spawnParticleInfo.type = pT_custom; spawnParticleInfo.color = { 0,0.2,0.5,1 }; spawnParticleInfo.geometry = CreateShape(physx::PxSphereGeometry(1));
-			spawnParticleInfo.velocity = { 0,35,0 }; spawnParticleInfo.lifeTime = 3;
-			spawnParticleInfo.origin = { 10,40,10 }; spawnParticleInfo.destroySpawnNum = 10;
-			particlesList.push_back(new Firework(spawnParticleInfo, fireworkPS, 2));*/
-			break;
-		}
-		case '5':
-		{
-			/*spawnParticleInfo.type = pT_custom; spawnParticleInfo.color = { 1,0.2,0.5,1 }; spawnParticleInfo.geometry = CreateShape(physx::PxSphereGeometry(1));
-			spawnParticleInfo.velocity = { 0,35,0 }; spawnParticleInfo.lifeTime = 3;
-			spawnParticleInfo.origin = { 10,40,10 };
-			particlesList.push_back(new Firework(spawnParticleInfo, fireworkPS, 3));*/
-			break;
-		}
-		case '6':
-		{
-			auto explosionTest = new ExplosionForceGenerator(Vector3(0, 80, 50), 1000000, 50, false);
-			forcesPS->addForceGenerator(explosionTest);
+		case 'd': {
+			GetCamera()->move(-1);
 			break;
 		}
 		case ' ':
 		{
-			if (particlesList.size() > maxParticleCount) break;
-			//Se actualizan los valores de posición y dirección de la cámara para la creación del proyectil
-			//Esto no se utiliza para la práctica de los fuegos artificiales
-			spawnParticleInfo.type = pT_Cannon; spawnParticleInfo.color = { 1,0,0,1 };
-			spawnParticleInfo.velocity = camera->getDir();
-			spawnParticleInfo.origin = camera->getEye();
-			spawnParticleInfo.lifeTime = 1;
-			spawnParticleInfo.mass = 10;
-			Particle* p = new Particle(spawnParticleInfo);
-			particlesList.push_back(p);
-			if(gGenerator) registry->addRegistry(gGenerator, p);
-			if(dGenerator) registry->addRegistry(dGenerator, p);
-			if(tGenerator) registry->addRegistry(tGenerator, p);
-			break;
+			
 		}
 	}
 }
 
+void Scene::mousePress(int button, int state)
+{
+	if (button == 0) {
+		attackPressed = !state;
+		if (attackPressed) startAttackTime = currentTime;
+		else {
+			intensidad = PxClamp((currentTime - startAttackTime), 0.4f, maxAttackChargeTime) / maxAttackChargeTime;
+			display_text = "";
+			shoot(intensidad);
+		}
+	}
+}
+
+void Scene::shoot(float intensity)
+{
+	//Crea la informaciÃ³n para generar un proyectil por defecto
+	spawnParticleInfo = { camera->getEye(), camera->getDir(), 0.98, 5, 700,1, particleType::pT_Cannon,Vector4(0,0,1,1), CreateShape(physx::PxSphereGeometry(1)) };
+	if (particlesList.size() > maxParticleCount) return;
+	spawnParticleInfo.type = pT_Cannon; 
+	spawnParticleInfo.velocity = camera->getDir() * intensity;
+	spawnParticleInfo.origin = camera->getEye();
+	Particle* p = new Particle(spawnParticleInfo);
+	particlesList.push_back(p);
+	if (gGenerator) registry->addRegistry(gGenerator, p);
+	
+}
+
 void Scene::integrate(float dt)
 {
+	currentTime += dt;
 	list<Particle*>::iterator it = particlesList.begin();
 	Particle* p;
 	registry->updateForces(dt);
-	while (it != particlesList.end()) { //Se actualizan las partículas
+	while (it != particlesList.end()) { //Se actualizan las partÃ­culas
 		p = *it;
 		p->integrate(dt);
 		if (!p->checkAlive()) { //Se comprueban si se ha acabado su tiempo de vida o han tocado el suelo
@@ -268,9 +263,24 @@ void Scene::integrate(float dt)
 	}
 	for(auto pS : pSystem) pS->integrate(dt);
 
-	for (Particle* pt : particlesToDelete) { //Se borran las partículas pendientes de destruir
+	for (Particle* pt : particlesToDelete) { //Se borran las partÃ­culas pendientes de destruir
 		delete pt;
 	}
 	particlesToDelete.clear();
+
+	if (attackPressed) {
+		float v1 = PxClamp((currentTime - startAttackTime), 0.0f, maxAttackChargeTime);
+		float i = v1 / maxAttackChargeTime;
+		display_text = "";
+		for (int c = 0; c < i * 10; ++c) {
+			display_text += "/";
+		}
+		springParticle->setPosition(camera->getEye() + camera->getDir()*1.2 - PxVec3(0, 0.43, 0));
+	}
+	auto rightVec = camera->getDir().cross({ 0,1,0 });
+	catapulta1->setGlobalPose(PxTransform(GetCamera()->getEye() + GetCamera()->getDir() * 1.5 + rightVec * 0.7 - PxVec3(0, 0.3, 0)));
+	catapulta2->setGlobalPose(PxTransform(GetCamera()->getEye() + GetCamera()->getDir() * 1.5 + -rightVec * 0.7 - PxVec3(0, 0.3, 0)));
+	spring1->setPosition(GetCamera()->getEye() + GetCamera()->getDir() * 1.5 + rightVec * 0.7 - PxVec3(0, 0.1, 0));
+	spring2->setPosition(GetCamera()->getEye() + GetCamera()->getDir() * 1.5 + -rightVec * 0.7 - PxVec3(0, 0.1, 0));
 }
 

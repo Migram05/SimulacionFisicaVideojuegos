@@ -12,6 +12,7 @@ extern void initPhysics(bool interactive);
 extern void stepPhysics(bool interactive, double t);	
 extern void cleanupPhysics(bool interactive);
 extern void keyPress(unsigned char key, const PxTransform& camera);
+extern void mousePress(int button, int state);
 extern PxPhysics* gPhysics;
 extern PxMaterial* gMaterial;
 
@@ -57,13 +58,17 @@ void keyboardCallback(unsigned char key, int x, int y)
 	if(key==27)
 		exit(0);
 
-	if(!sCamera->handleKey(key, x, y))
-		keyPress(key, sCamera->getTransform());
+	keyPress(key, sCamera->getTransform());
+
+	//if(!sCamera->handleKey(key, x, y))
+	//	keyPress(key, sCamera->getTransform());
 }
 
 void mouseCallback(int button, int state, int x, int y)
 {
-	sCamera->handleMouse(button, state, x, y);
+	//sCamera->handleMouse(button, state, x, y);
+
+	mousePress(button, state);
 }
 
 void idleCallback()
@@ -138,7 +143,7 @@ void renderLoop()
 	StartCounter();
 	sCamera = new Camera(PxVec3(50.0f, 500.0f, 50.0f), PxVec3(-0.6f,-0.2f,-0.7f));
 
-	setupDefaultWindow("Simulacion Fisica Videojuegos");
+	setupDefaultWindow("Proyecto final Simulación física Miguel Ramírez");
 	setupDefaultRenderState();
 
 	glutIdleFunc(idleCallback);
