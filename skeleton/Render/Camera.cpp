@@ -44,6 +44,11 @@ Camera::Camera(const PxVec3& eye, const PxVec3& dir)
 	mDir = dir.getNormalized();
 	mMouseX = 0;
 	mMouseY = 0;
+
+	//Rotación de la catapulta
+	PxVec3 viewY = mDir.cross(PxVec3(0, 1, 0)).getNormalized();
+	PxQuat qy(PxPi * -25 / 180.0f, viewY);
+	mDir = qy.rotate({1,0,0});
 }
 
 void Camera::handleMouse(int button, int state, int x, int y)
@@ -62,10 +67,10 @@ bool Camera::handleKey(unsigned char key, int x, int y, float speed)
 	PxVec3 viewY = mDir.cross(PxVec3(0,1,0)).getNormalized();
 	switch(toupper(key))
 	{
-	case 'W':	mEye += mDir*2.0f*speed;		break;
-	case 'S':	mEye -= mDir*2.0f*speed;		break;
-	case 'A':	mEye -= viewY*2.0f*speed;		break;
-	case 'D':	mEye += viewY*2.0f*speed;		break;
+	//case 'W':	mEye += mDir*2.0f*speed;		break;
+	//case 'S':	mEye -= mDir*2.0f*speed;		break;
+	//case 'A':	mEye -= viewY*2.0f*speed;		break;
+	//case 'D':	mEye += viewY*2.0f*speed;		break;
 	default:							return false;
 	}
 	return true;
@@ -82,6 +87,7 @@ void Camera::handleMotion(int x, int y)
 {
 	int dx = mMouseX - x;
 	int dy = mMouseY - y;
+	dy = 0;
 
 	PxVec3 viewY = mDir.cross(PxVec3(0,1,0)).getNormalized();
 

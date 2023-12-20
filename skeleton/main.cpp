@@ -13,9 +13,9 @@
 #include "RBForceGenerator.h"
 #include "RBFlotationForceGenerator.h"
 
-#define PRACTICA5
+//#define PRACTICA5
 
-std::string display_text = "Practica Sim. Fis. 3ºV Miguel Ramirez";
+std::string display_text = "Proyecto Final Sim. Fis. 3ºV Miguel Ramirez";
 
 
 using namespace physx;
