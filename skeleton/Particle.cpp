@@ -20,11 +20,12 @@ Particle::Particle(particleInfo pI, ParticleGenerator* pG) : lifeTime(pI.lifeTim
 Particle::~Particle()
 {
 	//Si una partícula tiene asociado un generador y la propiedad de generar partículas al morir, cuando se destruya, generará partículas
-	if (pSystem != nullptr && generateOnDestroy) {
+	/*if (pSystem != nullptr && generateOnDestroy) {
 		particleInfo copy = pInfoCopy;
 		copy.type = pT_custom;
 		copy.lifeTime = (rand()%4) + 1;
 		copy.destroySpawn = false;
+		copy.destroySpawnNum = 5;
 		copy.origin = pose.p;
 		generator->setPosition(pose.p);
 		for (int i = 0; i < generateNum; i++) {
@@ -33,7 +34,7 @@ Particle::~Particle()
 			copy.velocity = { (float)(rand() % 16) - 8,(float)(rand() % 5),(float)(rand() % 16) - 8 };
 			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", pose.p, copy, 0.1, 1, true));
 		}
-	}
+	}*/
 	ParticleForceRegistry::instance()->deleteParticleregistry(this);
 	renderItem->release();
 }
@@ -53,7 +54,8 @@ void Particle::integrate(double dt) //Calculos de velocidad
 bool Particle::checkAlive()
 {
 	//Comprueba que todavía le queda tiempo de vida y que no ha tocado el suelo y que no está demasiado lejos del origen
-	return (timeAlive < lifeTime && pose.p.y > -100 && (pose.p - origin).magnitude() <= maxDistance);
+	if (lifeTime == -1) return true; //Las partículas con tiempo de vida -1 son persistentes
+	return (timeAlive < lifeTime && pose.p.y > -1 && (pose.p - origin).magnitude() <= maxDistance);
 }
 
 void Particle::addForce(Vector3 f)
@@ -107,7 +109,7 @@ void Particle::setParticleValues(const particleInfo i)
 	}
 }
 
-Firework::Firework(particleInfo pI, ParticleSystem* pS, int t) : Particle(pI), type(t)
+Firework::Firework(particleInfo pI, ParticleSystem* pS) : Particle(pI)
 {
 	pSystem = pS;
 }
@@ -119,42 +121,17 @@ Firework::~Firework()
 		particleInfo pInfo;
 		pInfo.type = pT_custom;
 		pInfo.color = { (float)(rand() % 2),(float)(rand() % 2),(float)(rand() % 2),1 };
-		pInfo.geometry = CreateShape(physx::PxSphereGeometry(0.15));
-		pInfo.destroySpawnNum = 5;
+		pInfo.geometry = CreateShape(physx::PxSphereGeometry(0.05));
+		pInfo.destroySpawnNum = 2;
 		pInfo.maxDistance = 1000;
-		pInfo.dumping = 0.1; //Le reducimos el dumping para que caigan más despacio
+		pInfo.dumping = (20+(float)(rand()%30))/100; //Le reducimos el dumping para que caigan más despacio
 		pInfo.lifeTime = rand() % 5 + 1;
-		pInfo.velocity = { 0,0,0 };
+		pInfo.velocity = { 0,-1,0 };
 		pInfo.origin = pose.p;
-		if (type < 3) {
-			pInfo.destroySpawn = (type == 2); //Si son de tipo 2 lo ajustamos para que las partículas generen más partículas
-			generator = new GaussianParticleGenerator(pSystem, "GenGenerator", pose.p, pInfo, 5,650, type != 1); //Si es de tipo 1 se genera indefinidamente
-			pSystem->addGenerator(generator);
-		}
-		else {//Fuego artificial de una cara sonriente 
-			pInfo.geometry = CreateShape(physx::PxSphereGeometry(0.5));
-			pInfo.lifeTime = 3;
-			pInfo.velocity = { 0,0,0 };
-			pInfo.dumping = 0.98;
-			Vector3 eyesOffset(5, 10, 0);
-			Vector3 mouth1(5, -7, 0);
-			Vector3 mouth2(10, -5, 0);
+		pInfo.destroySpawn = false;
 
-			Vector3 eye1 = pose.p + eyesOffset;
-			Vector3 eye2 (pose.p.x - eyesOffset.x, pose.p.y + eyesOffset.y, pose.p.z);
-			Vector3 m1 = pose.p + mouth1;
-			Vector3 m2 (pose.p.x - mouth1.x, pose.p.y + mouth1.y, pose.p.z);
-			Vector3 m4 = pose.p + mouth2;
-			Vector3 m5(pose.p.x - mouth2.x, pose.p.y + mouth2.y, pose.p.z);
-			Vector3 m6(pose.p.x, pose.p.y + mouth1.y, pose.p.z);
-
-			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", eye1, pInfo, 0.1, 1, true));
-			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", eye2, pInfo, 0.1, 1, true));
-			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", m1, pInfo, 0.1, 1, true));
-			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", m2, pInfo, 0.1, 1, true));
-			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", m4, pInfo, 0.1, 1, true));
-			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", m5, pInfo, 0.1, 1, true));
-			pSystem->addGenerator(new GaussianParticleGenerator(pSystem, "GenGenerator", m6, pInfo, 0.1, 1, true));
-		}
+		generator = new GaussianParticleGenerator(pSystem, "GenGenerator", pose.p, pInfo, 1.5, 10, false, 5);
+		pSystem->addGenerator(generator);
+		
 	}
 }

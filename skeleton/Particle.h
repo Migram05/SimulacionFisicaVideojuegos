@@ -65,9 +65,9 @@ protected:
 class Firework : public Particle 
 {
 private:
-	int type;
+
 public:
-	Firework(particleInfo pI, class ParticleSystem*, int type = 1);
+	Firework(particleInfo pI, class ParticleSystem* pS);
 	~Firework();
 };
 

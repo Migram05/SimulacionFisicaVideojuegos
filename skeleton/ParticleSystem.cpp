@@ -29,6 +29,7 @@ ParticleSystem::~ParticleSystem()
 
 void ParticleSystem::integrate(double dt)
 {
+	timeAlive += dt;
 	list<ParticleGenerator*>::iterator itPG = particleGeneratorList.begin();
 	ParticleGenerator* pG;
 	while (itPG != particleGeneratorList.end()) { //Se actualizan los generadores
@@ -40,6 +41,9 @@ void ParticleSystem::integrate(double dt)
 		else {
 			auto listP = pG->generateParticles();
 			particlesList.splice(particlesList.end(), listP); //Se añaden las partículas generadas al generador
+			if (pG->getLifeTime() != -1 && timeAlive - pG->getTimeSpawn() > pG->getLifeTime()) {
+				pG->forceDestroy();
+			}
 			++itPG;
 		}
 	}
@@ -79,6 +83,7 @@ void ParticleSystem::integrate(double dt)
 
 void ParticleSystem::addGenerator(ParticleGenerator* pG)
 {
+	pG->setSpawnTime(timeAlive);
 	particleGeneratorList.push_back(pG);
 }
 

@@ -24,6 +24,7 @@ private:
 	list<class ParticleGenerator*> particlesGeneratorsToDeleteList;
 	list<class ForceGenerator*> forceGeneratorList;
 	int maxNum = 10000;
+	float timeAlive = 0;
 	particleInfo pInfo;
 	class ParticleForceRegistry* registry;
 };

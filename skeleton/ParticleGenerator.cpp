@@ -1,7 +1,7 @@
 #include "ParticleGenerator.h"
 #include "ParticleSystem.h"
 
-ParticleGenerator::ParticleGenerator(ParticleSystem* parentSys, string name, Vector3 pos, particleInfo model,float maxD, int nParticles, bool oneT) : position(pos), pModel(model), numParticles(nParticles), oneTime(oneT), maxDispersion(maxD), parentSystem(parentSys)
+ParticleGenerator::ParticleGenerator(ParticleSystem* parentSys, string name, Vector3 pos, particleInfo model,float maxD, int nParticles, bool oneT, float lT) : position(pos), pModel(model), numParticles(nParticles), oneTime(oneT), maxDispersion(maxD), parentSystem(parentSys), lifeTime(lT)
 {
 	shouldDestroyItself = false;
 }

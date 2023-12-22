@@ -34,9 +34,13 @@ class Scene
 	PxRigidDynamic* catapulta1;
 	PxRigidDynamic* catapulta2;
 
+	PxRigidDynamic* bola = nullptr;
+
 	Particle* springParticle;
 	Particle* spring1;
 	Particle* spring2;
+
+	list<PxRigidBody*> rigidBodyList;
 
 	float currentTime = 0;
 	float startAttackTime;
@@ -45,6 +49,9 @@ class Scene
 	bool attackPressed = false;
 
 	void shoot(float intensity);
+	void levelCompleted();
+	void createLevel(int lvl);
+	void level1();
 public:
 	Scene(PxPhysics* gP, PxScene* gS);
 	~Scene();

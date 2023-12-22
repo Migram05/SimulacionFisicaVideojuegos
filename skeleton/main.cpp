@@ -178,6 +178,9 @@ void onCollision(physx::PxActor* actor1, physx::PxActor* actor2)
 {
 	PX_UNUSED(actor1);
 	PX_UNUSED(actor2);
+
+	//if (actor1->getName() == "Bola" && actor1->isReleasable()) actor1->release();
+	//else if (actor2->getName() == "Bola" && actor2->isReleasable()) actor2->release();
 }
 
 

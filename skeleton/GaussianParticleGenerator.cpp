@@ -1,7 +1,7 @@
 #include "GaussianParticleGenerator.h"
 #include "ParticleSystem.h"
 
-GaussianParticleGenerator::GaussianParticleGenerator(ParticleSystem* parentSys, string name, Vector3 pos, particleInfo model,float maxDim, int nP, bool oneT) : ParticleGenerator(parentSys,name, pos, model,maxDim, nP, oneT)
+GaussianParticleGenerator::GaussianParticleGenerator(ParticleSystem* parentSys, string name, Vector3 pos, particleInfo model,float maxDim, int nP, bool oneT, float lT) : ParticleGenerator(parentSys,name, pos, model,maxDim, nP, oneT, lT)
 {
 	
 }

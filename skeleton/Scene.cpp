@@ -19,19 +19,28 @@ Scene::Scene(PxPhysics* gP, PxScene* gS)
 	//Cámara
 	gPhysics = gP; gScene = gS;
 	camera = GetCamera();
-	camera->setPosition(physx::PxVec3(0, 10, 0));
+	camera->setPosition(physx::PxVec3(0, 1, 0));
 
 	//Generadores de fuerza
 	registry = ParticleForceRegistry::instance();
 	forcesPS = new ParticleSystem(Vector3(0, 40, 0), Vector3(0, 1, 0));
+	fireworkPS = new ParticleSystem(Vector3(0, 40, 0), Vector3(0, 1, 0));
 	pSystem.push_back(forcesPS);
+	pSystem.push_back(fireworkPS);
 
 	gGenerator = new GravityGenerator(Vector3(10, 80, 0), Vector3(0, -98, 0));
 	dGenerator = new ParticleDragGenerator(Vector3(10, 100, 0), 1, 0);
 	//tGenerator = new TorbellinoGenerator(Vector3(0, 50, 0), 5, 2, 0, 1000);
 	//if (tGenerator) forcesPS->addForceGenerator(tGenerator);
-	if (dGenerator) forcesPS->addForceGenerator(dGenerator);
-	if (gGenerator) forcesPS->addForceGenerator(gGenerator);
+	
+	if (dGenerator) {
+		forcesPS->addForceGenerator(dGenerator);
+		//fireworkPS->addForceGenerator(dGenerator);
+	}
+	if (gGenerator) {
+		forcesPS->addForceGenerator(gGenerator);
+		//fireworkPS->addForceGenerator(gGenerator);
+	}
 
 
 	ground = gPhysics->createRigidStatic(PxTransform(0, 0, 0));
@@ -40,6 +49,7 @@ Scene::Scene(PxPhysics* gP, PxScene* gS)
 	gScene->addActor(*ground);
 	RenderItem* item = new RenderItem(forma, ground, { 0, 1, 0.25, 1 });
 
+	//Catapulta
 	catapulta1 = gPhysics->createRigidDynamic(PxTransform(GetCamera()->getEye() + PxVec3(1.2, 0, 0.5)));
 	PxShape* c1 = CreateShape(PxBoxGeometry(0.1, 0.4, 0.1));
 	catapulta1->attachShape(*c1);
@@ -53,13 +63,15 @@ Scene::Scene(PxPhysics* gP, PxScene* gS)
 	gScene->addActor(*catapulta2);
 	RenderItem* r2 = new RenderItem(c2, catapulta2, { 1, 1, 1, 1 });
 
-	particleInfo SInfo = { GetCamera()->getEye() + PxVec3(1.2, 0.25, -0.5), Vector3(0,1,0), 0.98, 50, 1000,0, particleType::pT_custom,Vector4(0,0,0,1), CreateShape(physx::PxBoxGeometry(0.05, 0.05, 0.05)), false, 0 };
+	particleInfo SInfo = { GetCamera()->getEye() + PxVec3(1.2, 0.25, -0.5), Vector3(0,1,0), 0.98, -1, 1000,0, particleType::pT_custom,Vector4(0,0,0,1), CreateShape(physx::PxBoxGeometry(0.05, 0.05, 0.05)), false, 0 };
 	spring1 = new Particle(SInfo);
+	particlesList.push_back(spring1);
 
-	particleInfo SInfo2 = { GetCamera()->getEye() + PxVec3(1.2, 0.25, 0.5), Vector3(0,1,0), 0.98, 50, 1000,0, particleType::pT_custom,Vector4(0,0,0,1), CreateShape(physx::PxBoxGeometry(0.05, 0.05, 0.05)), false, 0 };
+	particleInfo SInfo2 = { GetCamera()->getEye() + PxVec3(1.2, 0.25, 0.5), Vector3(0,1,0), 0.98, -1, 1000,0, particleType::pT_custom,Vector4(0,0,0,1), CreateShape(physx::PxBoxGeometry(0.05, 0.05, 0.05)), false, 0 };
 	spring2 = new Particle(SInfo2);
+	particlesList.push_back(spring2);
 
-	particleInfo SpringInfo = { GetCamera()->getEye() + PxVec3(1.2, 0, 0), Vector3(0,1,0), 0.98, 50, 1000,0.1, particleType::pT_custom,Vector4(0.5,0,0,1), CreateShape(physx::PxSphereGeometry(0.08)), false, 0 };
+	particleInfo SpringInfo = { GetCamera()->getEye() + PxVec3(1.2, 0, 0), Vector3(0,1,0), 0.98, -1, 1000,0.1, particleType::pT_custom,Vector4(0.5,0,0,1), CreateShape(physx::PxSphereGeometry(0.05)), false, 0 };
 	springParticle = new Particle(SpringInfo);
 	particlesList.push_back(springParticle);
 	sGenerator = new SpringForceGenerator(spring1, 25, 0.01);
@@ -68,6 +80,8 @@ Scene::Scene(PxPhysics* gP, PxScene* gS)
 	if (dGenerator) registry->addRegistry(dGenerator, springParticle);
 	registry->addRegistry(sGenerator, springParticle);
 	registry->addRegistry(sGenerator2, springParticle);
+
+	createLevel(1);
 
 #ifndef WATER
 	//Suelo
@@ -193,12 +207,12 @@ Scene::~Scene()
 		delete pt;
 	}
 	for (ParticleSystem* pS : pSystem) delete pS;
-
-	ground->release();
-	catapulta1->release();
-	catapulta2->release();
-	delete spring1;
-	delete spring2;
+	for (PxRigidBody* rb : rigidBodyList) {
+		if(rb->isReleasable())  rb->release();
+	}
+	//ground->release();
+	//catapulta1->release();
+	//catapulta2->release();
 }
 
 void Scene::keyPress(unsigned char key)
@@ -234,7 +248,7 @@ void Scene::mousePress(int button, int state)
 
 void Scene::shoot(float intensity)
 {
-	//Crea la información para generar un proyectil por defecto
+	/*//Crea la información para generar un proyectil por defecto
 	spawnParticleInfo = { camera->getEye(), camera->getDir(), 0.98, 5, 700,1, particleType::pT_Cannon,Vector4(0,0,1,1), CreateShape(physx::PxSphereGeometry(1)) };
 	if (particlesList.size() > maxParticleCount) return;
 	spawnParticleInfo.type = pT_Cannon; 
@@ -243,7 +257,89 @@ void Scene::shoot(float intensity)
 	Particle* p = new Particle(spawnParticleInfo);
 	particlesList.push_back(p);
 	if (gGenerator) registry->addRegistry(gGenerator, p);
-	
+	if (dGenerator) registry->addRegistry(dGenerator, p);*/
+
+	bola = gPhysics->createRigidDynamic(PxTransform(camera->getEye()));
+	PxShape* b = CreateShape(PxSphereGeometry(0.2));
+	bola->attachShape(*b);
+	gScene->addActor(*bola);
+	RenderItem* e1 = new RenderItem(b, bola, { 0.5,0.5, 0.5, 1 });
+	rigidBodyList.push_back(bola);
+	bola->setMass(10);
+	bola->addForce(camera->getDir() * 85000 * intensity);
+	bola->setName("Bola");
+}
+
+void Scene::levelCompleted()
+{
+	particleInfo fInfo = { GetCamera()->getEye() + camera->getDir() * 10,Vector3(0,5,0), 0.98, 1, 1000,1, particleType::pT_custom,Vector4(1,0,1,1), CreateShape(physx::PxSphereGeometry(0.05)), true, 50 };
+	particlesList.push_back(new Firework(fInfo, fireworkPS));
+}
+
+void Scene::createLevel(int lvl)
+{
+	switch (lvl) {
+		case 1: level1(); break;
+		default: break;
+	}
+}
+
+void Scene::level1()
+{
+	PxTransform spawnPos(camera->getEye() + camera->getDir() * 35);
+	spawnPos.p.y = 0;
+
+	PxRigidDynamic* pilar1 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x-1,1, spawnPos.p.z-1));
+	PxShape* c1 = CreateShape(PxBoxGeometry(0.4, 1, 0.4));
+	pilar1->attachShape(*c1);
+	gScene->addActor(*pilar1);
+	RenderItem* r1 = new RenderItem(c1, pilar1, { 1,1, 1, 1 });
+	pilar1->setMass(10);
+	pilar1->setMassSpaceInertiaTensor({ 0,0,0 });
+	rigidBodyList.push_back(pilar1);
+
+	PxRigidDynamic* pilar2 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x - 1, 1, spawnPos.p.z+1));
+	PxShape* c2 = CreateShape(PxBoxGeometry(0.4, 1, 0.4));
+	pilar2->attachShape(*c2);
+	gScene->addActor(*pilar2);
+	RenderItem* r2 = new RenderItem(c2, pilar2, { 1,1, 1, 1 });
+	pilar2->setMass(10);
+	pilar2->setMassSpaceInertiaTensor({ 0,0,0 });
+	rigidBodyList.push_back(pilar2);
+
+	PxRigidDynamic* pilar3 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x + 1, 1, spawnPos.p.z - 1));
+	PxShape* c3 = CreateShape(PxBoxGeometry(0.4, 1, 0.4));
+	pilar3->attachShape(*c3);
+	gScene->addActor(*pilar3);
+	RenderItem* r3 = new RenderItem(c3, pilar3, { 1,1, 1, 1 });
+	pilar3->setMass(10);
+	pilar3->setMassSpaceInertiaTensor({ 0,0,0 });
+	rigidBodyList.push_back(pilar3);
+
+	PxRigidDynamic* pilar4 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x + 1, 1, spawnPos.p.z + 1));
+	PxShape* c4 = CreateShape(PxBoxGeometry(0.4, 1, 0.4));
+	pilar4->attachShape(*c4);
+	gScene->addActor(*pilar4);
+	RenderItem* r4 = new RenderItem(c4, pilar4, { 1,1, 1, 1 });
+	pilar4->setMass(10);
+	pilar4->setMassSpaceInertiaTensor({ 0,0,0 });
+	rigidBodyList.push_back(pilar4);
+
+	PxRigidDynamic* suelo1 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x, 2, spawnPos.p.z));
+	PxShape* s = CreateShape(PxBoxGeometry(2, 0.1, 2));
+	suelo1->attachShape(*s);
+	gScene->addActor(*suelo1);
+	RenderItem* s1 = new RenderItem(s, suelo1, { 1,1, 1, 1 });
+	suelo1->setMass(5);
+	rigidBodyList.push_back(suelo1);
+
+	PxRigidDynamic* enemigo1 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x, 4, spawnPos.p.z));
+	PxShape* e = CreateShape(PxBoxGeometry(0.5, 0.5, 0.5));
+	enemigo1->attachShape(*e);
+	gScene->addActor(*enemigo1);
+	RenderItem* e1 = new RenderItem(e, enemigo1, { 1,0, 0, 1 });
+	enemigo1->setMass(5);
+	rigidBodyList.push_back(enemigo1);
 }
 
 void Scene::integrate(float dt)
@@ -277,6 +373,7 @@ void Scene::integrate(float dt)
 		}
 		springParticle->setPosition(camera->getEye() + camera->getDir()*1.2 - PxVec3(0, 0.43, 0));
 	}
+
 	auto rightVec = camera->getDir().cross({ 0,1,0 });
 	catapulta1->setGlobalPose(PxTransform(GetCamera()->getEye() + GetCamera()->getDir() * 1.5 + rightVec * 0.7 - PxVec3(0, 0.3, 0)));
 	catapulta2->setGlobalPose(PxTransform(GetCamera()->getEye() + GetCamera()->getDir() * 1.5 + -rightVec * 0.7 - PxVec3(0, 0.3, 0)));
