@@ -238,9 +238,15 @@ void Scene::mousePress(int button, int state)
 {
 	if (button == 0) {
 		attackPressed = !state;
-		if (attackPressed) startAttackTime = currentTime;
+		if (attackPressed) {
+			startAttackTime = currentTime;
+			particleInfo trayectoryPInfo = { springParticle->getPos(), {0,-1,0}, 0.98, 0.5, 1000,0.5, particleType::pT_custom,Vector4(0,0,1,1), CreateShape(physx::PxSphereGeometry(0.03)), false, 0};
+			trayectoryGenerator = new GaussianParticleGenerator(forcesPS, "Trayectoria", camera->getEye() + camera->getDir() * 2, trayectoryPInfo, 0.05, 1);
+			forcesPS->addGenerator(trayectoryGenerator);
+		}
 		else {
-			intensidad = PxClamp((currentTime - startAttackTime), 0.4f, maxAttackChargeTime) / maxAttackChargeTime;
+			trayectoryGenerator->forceDestroy();
+
 			display_text = "";
 			shoot(intensidad);
 		}
@@ -249,17 +255,11 @@ void Scene::mousePress(int button, int state)
 
 void Scene::shoot(float intensity)
 {
-	/*//Crea la información para generar un proyectil por defecto
-	spawnParticleInfo = { camera->getEye(), camera->getDir(), 0.98, 5, 700,1, particleType::pT_Cannon,Vector4(0,0,1,1), CreateShape(physx::PxSphereGeometry(1)) };
-	if (particlesList.size() > maxParticleCount) return;
-	spawnParticleInfo.type = pT_Cannon; 
-	spawnParticleInfo.velocity = camera->getDir() * intensity;
-	spawnParticleInfo.origin = camera->getEye();
-	Particle* p = new Particle(spawnParticleInfo);
-	particlesList.push_back(p);
-	if (gGenerator) registry->addRegistry(gGenerator, p);
-	if (dGenerator) registry->addRegistry(dGenerator, p);*/
-
+	if (numDisparos <= 0) {
+		return;
+	}
+	numDisparos--;
+	bulletCounter_text = to_string(numDisparos);
 	bola = gPhysics->createRigidDynamic(PxTransform(camera->getEye()));
 	PxShape* b = CreateShape(PxSphereGeometry(0.2));
 	bola->attachShape(*b);
@@ -270,12 +270,17 @@ void Scene::shoot(float intensity)
 	bola->addForce(camera->getDir() * 85000 * intensity);
 	bola->setRBType(RBType::RB_Projectile);
 	bola->canInteractCollisions = true;
+
+	if(numDisparos <= 0) defeatTimer = currentTime;
 }
 
 void Scene::levelCompleted()
 {
 	particleInfo fInfo = { GetCamera()->getEye() + camera->getDir() * 10,Vector3(0,5,0), 0.98, 1, 1000,1, particleType::pT_custom,Vector4(1,0,1,1), CreateShape(physx::PxSphereGeometry(0.05)), true, 50 };
 	particlesList.push_back(new Firework(fInfo, fireworkPS));
+	particlesList.push_back(new Firework(fInfo, fireworkPS));
+	defeatTimer = -1;
+	end_text = "VICTORIA";
 }
 
 void Scene::createLevel(int lvl)
@@ -288,6 +293,8 @@ void Scene::createLevel(int lvl)
 
 void Scene::level1()
 {
+	numDisparos = 3;
+	bulletCounter_text = to_string(numDisparos);
 	PxTransform spawnPos(camera->getEye() + camera->getDir() * 35);
 	spawnPos.p.y = 0;
 
@@ -297,7 +304,6 @@ void Scene::level1()
 	gScene->addActor(*pilar1);
 	RenderItem* r1 = new RenderItem(c1, pilar1, { 1,1, 1, 1 });
 	pilar1->setMass(10);
-	pilar1->setMassSpaceInertiaTensor({ 0,0,0 });
 	rigidBodyList.push_back(pilar1);
 
 	PxRigidDynamic* pilar2 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x - 1, 1, spawnPos.p.z+1));
@@ -306,7 +312,6 @@ void Scene::level1()
 	gScene->addActor(*pilar2);
 	RenderItem* r2 = new RenderItem(c2, pilar2, { 1,1, 1, 1 });
 	pilar2->setMass(10);
-	pilar2->setMassSpaceInertiaTensor({ 0,0,0 });
 	rigidBodyList.push_back(pilar2);
 
 	PxRigidDynamic* pilar3 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x + 1, 1, spawnPos.p.z - 1));
@@ -315,7 +320,6 @@ void Scene::level1()
 	gScene->addActor(*pilar3);
 	RenderItem* r3 = new RenderItem(c3, pilar3, { 1,1, 1, 1 });
 	pilar3->setMass(10);
-	pilar3->setMassSpaceInertiaTensor({ 0,0,0 });
 	rigidBodyList.push_back(pilar3);
 
 	PxRigidDynamic* pilar4 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x + 1, 1, spawnPos.p.z + 1));
@@ -324,7 +328,6 @@ void Scene::level1()
 	gScene->addActor(*pilar4);
 	RenderItem* r4 = new RenderItem(c4, pilar4, { 1,1, 1, 1 });
 	pilar4->setMass(10);
-	pilar4->setMassSpaceInertiaTensor({ 0,0,0 });
 	rigidBodyList.push_back(pilar4);
 
 	PxRigidDynamic* suelo1 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x, 2, spawnPos.p.z));
@@ -341,6 +344,7 @@ void Scene::level1()
 	gScene->addActor(*enemigo1);
 	RenderItem* e1 = new RenderItem(e, enemigo1, { 1,0, 0, 1 });
 	enemigo1->setMass(5);
+	enemigo1->setMassSpaceInertiaTensor({ 0,0,0 });
 	enemigo1->setRBType(RBType::RB_Enemy);
 	rigidBodyList.push_back(enemigo1);
 	enemigo1->canInteractCollisions = true;
@@ -348,6 +352,7 @@ void Scene::level1()
 
 void Scene::integrate(float dt)
 {
+	//cout << springParticle->getPos().x << ' ' << springParticle->getPos().y << ' ' << springParticle->getPos().z << '\n';
 	currentTime += dt;
 	list<Particle*>::iterator it = particlesList.begin();
 	Particle* p;
@@ -369,14 +374,16 @@ void Scene::integrate(float dt)
 	particlesToDelete.clear();
 
 	if (attackPressed) {
-		float v1 = PxClamp((currentTime - startAttackTime), 0.0f, maxAttackChargeTime);
-		float i = v1 / maxAttackChargeTime;
+		intensidad = PxClamp((currentTime - startAttackTime), 0.4f, maxAttackChargeTime) / maxAttackChargeTime;
 		display_text = "";
-		for (int c = 0; c < i * 10; ++c) {
+		for (int c = 0; c < intensidad * 10; ++c) {
 			display_text += "/";
 		}
 		springParticle->setPosition(camera->getEye() + camera->getDir()*1.2 - PxVec3(0, 0.43, 0));
+		trayectoryGenerator->setPosition(springParticle->getPos());
+		trayectoryGenerator->setParticleVelocity(camera->getDir() * intensidad * 200);
 	}
+	if (defeatTimer != -1 && currentTime - defeatTimer > 5) end_text = "DERROTA";
 
 	auto rightVec = camera->getDir().cross({ 0,1,0 });
 	catapulta1->setGlobalPose(PxTransform(GetCamera()->getEye() + GetCamera()->getDir() * 1.5 + rightVec * 0.7 - PxVec3(0, 0.3, 0)));

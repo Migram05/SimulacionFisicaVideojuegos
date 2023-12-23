@@ -16,6 +16,8 @@
 //#define PRACTICA5
 
 std::string display_text = "";
+std::string bulletCounter_text = "";
+std::string end_text = "";
 
 using namespace physx;
 using namespace std;

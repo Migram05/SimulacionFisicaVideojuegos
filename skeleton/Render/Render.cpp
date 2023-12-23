@@ -29,6 +29,7 @@
 
 #include "Render.h"
 #include <assert.h>
+#include <iostream>
 
 using namespace physx;
 
@@ -249,7 +250,7 @@ void setupDefaultWindow(const char *name)
 
 	glutInit(&argc, argv);
 	
-	glutInitWindowSize(512, 512);
+	glutInitWindowSize(WIN_WIDTH, WIN_HEIGHT);
 	glutInitDisplayMode(GLUT_RGB|GLUT_DOUBLE|GLUT_DEPTH);
 	int mainHandle = glutCreateWindow(name);
 	glutSetWindow(mainHandle);
@@ -288,7 +289,9 @@ void startRender(const PxVec3& cameraEye, const PxVec3& cameraDir, PxReal clipNe
 
 	// Display text
 	glColor4f(1.0f, 0.0f,0.0f, 1.0f);
-	drawText(display_text, 0, 0);
+	drawText(display_text, 0, 5);
+	drawText(bulletCounter_text, 0, 20);
+	drawText(end_text, (WIN_WIDTH / 2)-25, WIN_HEIGHT / 2);
 
 	// Setup camera
 	glMatrixMode(GL_PROJECTION);

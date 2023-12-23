@@ -22,6 +22,7 @@ public:
 	void setParticle(particleInfo model);
 	void setPosition(Vector3 pos);
 	void setMaxDispersion(float newDispersion);
+	void setParticleVelocity(Vector3 newVel) { pModel.velocity = newVel; }
 	bool shouldDestroy();
 	void setNumparticles(int newNum);
 	inline void setSpawnTime(float sT) { spawnTime = sT; }

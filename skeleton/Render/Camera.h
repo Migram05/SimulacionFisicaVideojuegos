@@ -56,7 +56,7 @@ private:
 	physx::PxVec3	mDir;
 	int				mMouseX;
 	int				mMouseY;
-	float catapultRotationSpeed = 2;
+	float catapultRotationSpeed = 1;
 };
 
 

@@ -120,7 +120,7 @@ Firework::~Firework()
 	if (pSystem) {
 		particleInfo pInfo;
 		pInfo.type = pT_custom;
-		pInfo.color = { (float)(rand() % 2),(float)(rand() % 2),(float)(rand() % 2),1 };
+		pInfo.color = { (float)((rand() % 100)/50),(float)((rand() % 100)/50),(float)((rand() % 100)/50),1 };
 		pInfo.geometry = CreateShape(physx::PxSphereGeometry(0.05));
 		pInfo.destroySpawnNum = 2;
 		pInfo.maxDistance = 1000;

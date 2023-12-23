@@ -27,6 +27,8 @@ class Scene
 	class SpringForceGenerator* sGenerator = nullptr;
 	class FlotationForceGenerator* fGenerator = nullptr;
 
+	class GaussianParticleGenerator* trayectoryGenerator = nullptr;
+
 	PxPhysics* gPhysics;
 	PxScene* gScene;
 
@@ -48,6 +50,8 @@ class Scene
 	float intensidad;
 	bool attackPressed = false;
 	int numEnemies = 0;
+	int numDisparos = 0;
+	float defeatTimer = -1;
 
 	void shoot(float intensity);
 	void levelCompleted();
