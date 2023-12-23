@@ -47,6 +47,7 @@ class Scene
 	float maxAttackChargeTime = 2;
 	float intensidad;
 	bool attackPressed = false;
+	int numEnemies = 0;
 
 	void shoot(float intensity);
 	void levelCompleted();
@@ -58,5 +59,7 @@ public:
 	void keyPress(unsigned char key);
 	void mousePress(int button, int state);
 	void integrate(float dt);
+	void generateExplosion(Vector3 origin);
+	void enemyDead();
 };
 

@@ -17,7 +17,6 @@
 
 std::string display_text = "";
 
-
 using namespace physx;
 using namespace std;
 
@@ -120,7 +119,7 @@ void stepPhysics(bool interactive, double t)
 		}
 	}
 #endif // PRACTICA5
-
+	
 }
 
 // Function to clean data
@@ -173,14 +172,24 @@ void mousePress(int button, int state) {
 	currentScene->mousePress(button, state);
 }
 
-
-void onCollision(physx::PxActor* actor1, physx::PxActor* actor2)
+void onCollision(physx::PxRigidActor* actor1, physx::PxRigidActor* actor2)
 {
 	PX_UNUSED(actor1);
 	PX_UNUSED(actor2);
+	if (!actor1 || !actor2) return;
 
-	//if (actor1->getName() == "Bola" && actor1->isReleasable()) actor1->release();
-	//else if (actor2->getName() == "Bola" && actor2->isReleasable()) actor2->release();
+	if (actor1->getRBType() == RB_Projectile) {
+		if (actor1->canInteractCollisions) {
+			actor1->canInteractCollisions = false;
+			currentScene->generateExplosion(actor1->getWorldBounds().getCenter());
+		}
+	}
+	else if (actor1->getRBType() == RB_Enemy && actor2->getRBType() == RB_Ground) {
+		if (actor1->canInteractCollisions) {
+			actor1->canInteractCollisions = false;
+			currentScene->enemyDead();
+		}
+	}
 }
 
 

@@ -47,6 +47,7 @@ Scene::Scene(PxPhysics* gP, PxScene* gS)
 	PxShape* forma = CreateShape(PxBoxGeometry(500, 0.1, 500));
 	ground->attachShape(*forma);
 	gScene->addActor(*ground);
+	ground->setRBType(RBType::RB_Ground);
 	RenderItem* item = new RenderItem(forma, ground, { 0, 1, 0.25, 1 });
 
 	//Catapulta
@@ -267,7 +268,8 @@ void Scene::shoot(float intensity)
 	rigidBodyList.push_back(bola);
 	bola->setMass(10);
 	bola->addForce(camera->getDir() * 85000 * intensity);
-	bola->setName("Bola");
+	bola->setRBType(RBType::RB_Projectile);
+	bola->canInteractCollisions = true;
 }
 
 void Scene::levelCompleted()
@@ -339,7 +341,9 @@ void Scene::level1()
 	gScene->addActor(*enemigo1);
 	RenderItem* e1 = new RenderItem(e, enemigo1, { 1,0, 0, 1 });
 	enemigo1->setMass(5);
+	enemigo1->setRBType(RBType::RB_Enemy);
 	rigidBodyList.push_back(enemigo1);
+	enemigo1->canInteractCollisions = true;
 }
 
 void Scene::integrate(float dt)
@@ -379,5 +383,25 @@ void Scene::integrate(float dt)
 	catapulta2->setGlobalPose(PxTransform(GetCamera()->getEye() + GetCamera()->getDir() * 1.5 + -rightVec * 0.7 - PxVec3(0, 0.3, 0)));
 	spring1->setPosition(GetCamera()->getEye() + GetCamera()->getDir() * 1.5 + rightVec * 0.7 - PxVec3(0, 0.1, 0));
 	spring2->setPosition(GetCamera()->getEye() + GetCamera()->getDir() * 1.5 + -rightVec * 0.7 - PxVec3(0, 0.1, 0));
+}
+
+void Scene::generateExplosion(Vector3 origin)
+{
+	for (auto rb : rigidBodyList) {
+		if (rb != nullptr) {
+			float distancia = (rb->getGlobalPose().p - origin).magnitude();
+			if (distancia <= 200) {
+				Vector3 posiciones(rb->getGlobalPose().p.x - origin.x, rb->getGlobalPose().p.y - origin.y, rb->getGlobalPose().p.z - origin.z);
+				Vector3 explosionForce((50000 / pow(distancia, 2.f)) * posiciones);
+				rb->addForce(explosionForce);
+			}
+		}
+	}
+}
+
+void Scene::enemyDead()
+{
+	numEnemies--;
+	if (numEnemies <= 0) levelCompleted();
 }
 

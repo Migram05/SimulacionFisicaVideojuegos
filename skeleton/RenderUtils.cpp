@@ -109,7 +109,8 @@ void renderCallback()
 		if (!objTransform)
 		{
 			auto actor = obj->actor;
-			if (actor)
+			
+			if (actor && obj->shape)
 			{
 				renderShape(*obj->shape, actor->getGlobalPose(), obj->color);
 				continue;
