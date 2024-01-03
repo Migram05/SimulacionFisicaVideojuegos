@@ -9,6 +9,7 @@
 #include "SpringForceGenerator.h"
 #include "ElasticBandForceGenerator.h"
 #include "FlotationForceGenerator.h"
+#include "UniformTreeGenerator.h"
 
 //#define MSTATIC
 //#define MMOVIL
@@ -83,6 +84,8 @@ Scene::Scene(PxPhysics* gP, PxScene* gS)
 	registry->addRegistry(sGenerator2, springParticle);
 
 	createLevel(1);
+
+	
 
 #ifndef WATER
 	//Suelo
@@ -286,7 +289,7 @@ void Scene::levelCompleted()
 void Scene::createLevel(int lvl)
 {
 	switch (lvl) {
-		case 1: level1(); break;
+	case 1: level1(); generateTrees(100); break;
 		default: break;
 	}
 }
@@ -348,6 +351,19 @@ void Scene::level1()
 	enemigo1->setRBType(RBType::RB_Enemy);
 	rigidBodyList.push_back(enemigo1);
 	enemigo1->canInteractCollisions = true;
+}
+
+void Scene::generateTrees(int num)
+{
+	ParticleSystem* treePS = new ParticleSystem(Vector3(0, 0, 0), Vector3(200, 3, 200));
+	pSystem.push_back(treePS);
+	particleInfo treeModel = { Vector3(0,1,0), Vector3(0,0,0), 0.98, -1, 1000,0, particleType::pT_custom,Vector4(0,1,0,1), CreateShape(physx::PxSphereGeometry(2)), false, 0};
+	UniformTreeGenerator* treeGenerator = new UniformTreeGenerator(treePS, "GeneradorArboles", Vector3(-100, 2,-100), 300, 0, treeModel, num);
+	treePS->addGenerator(treeGenerator);
+
+	particleInfo sunModel = { Vector3(150,50,150), Vector3(0,0,0), 0.98, -1, 1000,0, particleType::pT_custom,Vector4(1,1,0,1), CreateShape(physx::PxSphereGeometry(20)), false, 0 };
+	Particle* sun = new Particle(sunModel);
+	particlesList.push_back(sun);
 }
 
 void Scene::integrate(float dt)

@@ -276,6 +276,7 @@
     <ClCompile Include="SpringForceGenerator.cpp" />
     <ClCompile Include="TorbellinoGenerator.cpp" />
     <ClCompile Include="UniformParticleGenerator.cpp" />
+    <ClCompile Include="UniformTreeGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="callbacks.hpp" />
@@ -301,6 +302,7 @@
     <ClInclude Include="SpringForceGenerator.h" />
     <ClInclude Include="TorbellinoGenerator.h" />
     <ClInclude Include="UniformParticleGenerator.h" />
+    <ClInclude Include="UniformTreeGenerator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

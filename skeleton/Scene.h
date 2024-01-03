@@ -57,6 +57,7 @@ class Scene
 	void levelCompleted();
 	void createLevel(int lvl);
 	void level1();
+	void generateTrees(int n);
 public:
 	Scene(PxPhysics* gP, PxScene* gS);
 	~Scene();

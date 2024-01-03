@@ -28,6 +28,7 @@
     <ClCompile Include="RigidBodyGenerator.cpp" />
     <ClCompile Include="RBFlotationForceGenerator.cpp" />
     <ClCompile Include="RBForceGenerator.cpp" />
+    <ClCompile Include="UniformTreeGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core.hpp" />
@@ -57,6 +58,7 @@
     <ClInclude Include="RigidBodyGenerator.h" />
     <ClInclude Include="RBFlotationForceGenerator.h" />
     <ClInclude Include="RBForceGenerator.h" />
+    <ClInclude Include="UniformTreeGenerator.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Render">
