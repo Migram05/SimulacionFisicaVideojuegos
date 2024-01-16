@@ -5,6 +5,10 @@
 #include "Particle.h"
 #include "ParticleSystem.h"
 #include "ParticleForceRegistry.h"
+#include <unordered_map>
+
+//Macro para elegir el nivel
+#define CURRENT_LEVEL 1
 
 using namespace std;
 using namespace physx;
@@ -44,6 +48,9 @@ class Scene
 
 	list<PxRigidBody*> rigidBodyList;
 
+	unordered_map<PxActor*, bool> enemies;
+	unordered_map<PxActor*, bool> bullets;
+
 	float currentTime = 0;
 	float startAttackTime;
 	float maxAttackChargeTime = 2;
@@ -57,7 +64,9 @@ class Scene
 	void levelCompleted();
 	void createLevel(int lvl);
 	void level1();
+	void level2();
 	void generateTrees(int n);
+	void windForce(float intensity);
 public:
 	Scene(PxPhysics* gP, PxScene* gS);
 	~Scene();
@@ -66,5 +75,11 @@ public:
 	void integrate(float dt);
 	void generateExplosion(Vector3 origin);
 	void enemyDead();
+	//Métodos usados para la comprobación de colisiones
+	PxActor* getGround() { return ground; }
+	bool isEnemy(PxActor* e) { return enemies.find(e) != enemies.end(); }
+	bool canEnemyInteract(PxActor* e) { bool res = enemies[e]; enemies[e] = false; return res; }
+	bool isBullet(PxActor* e) { return bullets.find(e) != bullets.end(); }
+	bool canBulletInteract(PxActor* e) { bool res = bullets[e]; bullets[e] = false; return res; }
 };
 

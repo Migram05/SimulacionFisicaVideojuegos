@@ -67,20 +67,20 @@ bool Camera::handleKey(unsigned char key, int x, int y, float speed)
 	PX_UNUSED(y);
 	
 	PxVec3 viewY = mDir.cross(PxVec3(0,1,0)).getNormalized();
-	switch(toupper(key))
+	/*switch(toupper(key))
 	{
 	//case 'W':	mEye += mDir*2.0f*speed;		break;
 	//case 'S':	mEye -= mDir*2.0f*speed;		break;
-	/*case 'A': {
+	case 'A': {
 		PxQuat qx(PxPi * catapultRotationSpeed / 180.0f, PxVec3(0, 1, 0));
 		mDir = qx.rotate(mDir);
 		break; 
 	}
 	case 'D': {
 		
-	}*/
-	default: return false;
 	}
+	default: return false;
+	}*/
 	return true;
 }
 

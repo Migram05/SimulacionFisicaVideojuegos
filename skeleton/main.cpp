@@ -13,8 +13,6 @@
 #include "RBForceGenerator.h"
 #include "RBFlotationForceGenerator.h"
 
-//#define PRACTICA5
-
 std::string display_text = "";
 std::string bulletCounter_text = "";
 std::string end_text = "";
@@ -31,14 +29,11 @@ PxPvd*                  gPvd        = NULL;
 PxDefaultCpuDispatcher*	gDispatcher = NULL;
 PxScene*				gScene      = NULL;
 ContactReportCallback gContactReportCallback;
-vector<PxRigidDynamic*> rbVector;
 
-RigidBodyGenerator* RBGenerator;
 
 Scene* currentScene;
 
-RBFlotationForceGenerator* RBWaterForceGenerator;
-bool waterSimulationActive = false;
+
 
 // Initialize physics engine
 void initPhysics(bool interactive)
@@ -63,23 +58,9 @@ void initPhysics(bool interactive)
 	sceneDesc.filterShader = contactReportFilterShader;
 	sceneDesc.simulationEventCallback = &gContactReportCallback;
 	gScene = gPhysics->createScene(sceneDesc);
-#ifndef PRACTICA5
+
 	currentScene = new Scene(gPhysics, gScene); //Creación de la escena
-#endif // !PRACTICA5
-#ifdef PRACTICA5
-	//ajustamos la cámara
-	Camera* camera = GetCamera();
-	camera->setPosition({ -20, 15,0 });
-	//Creación del suelo
-	PxRigidStatic* suelo = gPhysics->createRigidStatic(PxTransform(0, 0, 0));
-	PxShape* forma = CreateShape(PxBoxGeometry(500, 0.1, 500));
-	suelo->attachShape(*forma);
-	gScene->addActor(*suelo);
-	RenderItem* item = new RenderItem(forma, suelo, { 1,1,1,1 });
-	RBGenerator = new RigidBodyGenerator({ 0,10,0 },gPhysics, 1000);
-	
-	RBWaterForceGenerator = new RBFlotationForceGenerator({ 0,20,0 }, 50, sceneDesc.gravity.y, 7);
-#endif // PRACTICA5
+
 }
 
 
@@ -92,36 +73,7 @@ void stepPhysics(bool interactive, double t)
 
 	gScene->simulate(t);
 	gScene->fetchResults(true);
-#ifndef PRACTICA5
 	currentScene->integrate(t);
-#endif // !PRACTICA5
-#ifdef PRACTICA5
-	if (RBGenerator != nullptr) {
-		PxRigidDynamic* RB = RBGenerator->generateRigidBody();
-		rbVector.push_back(RB);
-		if (RB == nullptr) {
-			delete RBGenerator;
-			RBGenerator = nullptr;
-		}
-		else {
-			PxShape* ShapeAD;
-			int r = rand() % 2;
-			ShapeAD = CreateShape(PxBoxGeometry(1, 1, 1));
-			RB->attachShape(*ShapeAD);
-			PxReal density = rand() % 10; density++;
-			PxRigidBodyExt::updateMassAndInertia(*RB, density);
-			gScene->addActor(*RB);
-			RenderItem* dynamicSolid;
-			dynamicSolid = new RenderItem(ShapeAD, RB, { (float)(10-density)/10,(float)(10 - density) / 10,(float)(10 - density) / 10,1});
-		}
-	}
-	if (waterSimulationActive) {
-		for (auto rb : rbVector) {
-			RBWaterForceGenerator->updateForce(rb);
-		}
-	}
-#endif // PRACTICA5
-	
 }
 
 // Function to clean data
@@ -148,21 +100,6 @@ void cleanupPhysics(bool interactive)
 	gFoundation->release();
 }
 
-
-void generateExplosion() {
-	PxTransform origin = { GetCamera()->getEye().x,GetCamera()->getEye().y,GetCamera()->getEye().z };
-	for (auto rb : rbVector) {
-		if (rb != nullptr) {
-			float distancia = (rb->getGlobalPose().p - origin.p).magnitude();
-			if (distancia <= 200) {
-				Vector3 posiciones(rb->getGlobalPose().p.x - origin.p.x, rb->getGlobalPose().p.y - origin.p.y, rb->getGlobalPose().p.z - origin.p.z);
-				Vector3 explosionForce((1000000 / pow(distancia, 2.f)) * posiciones);
-				rb->addForce(explosionForce);
-			}
-		}
-	}
-}
-
 // Function called when a key is pressed
 void keyPress(unsigned char key, const PxTransform& camera)
 {
@@ -179,16 +116,14 @@ void onCollision(physx::PxRigidActor* actor1, physx::PxRigidActor* actor2)
 	PX_UNUSED(actor1);
 	PX_UNUSED(actor2);
 	if (!actor1 || !actor2) return;
-
-	if (actor1->getRBType() == RB_Projectile) {
-		if (actor1->canInteractCollisions) {
-			actor1->canInteractCollisions = false;
+	
+	if (currentScene->isBullet(actor1)) { //Cuando una bala colisiona genera una explosión
+		if (currentScene->canBulletInteract(actor1)) {
 			currentScene->generateExplosion(actor1->getWorldBounds().getCenter());
 		}
 	}
-	else if (actor1->getRBType() == RB_Enemy && actor2->getRBType() == RB_Ground) {
-		if (actor1->canInteractCollisions) {
-			actor1->canInteractCollisions = false;
+	else if (currentScene->isEnemy(actor1) && actor2 == currentScene->getGround()) { //Si un enemigo toca el suelo, muere
+		if (currentScene->canEnemyInteract(actor1)) {
 			currentScene->enemyDead();
 		}
 	}

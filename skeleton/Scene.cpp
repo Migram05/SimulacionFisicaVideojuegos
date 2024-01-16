@@ -11,10 +11,6 @@
 #include "FlotationForceGenerator.h"
 #include "UniformTreeGenerator.h"
 
-//#define MSTATIC
-//#define MMOVIL
-//#define SLINKY
-//#define WATER
 Scene::Scene(PxPhysics* gP, PxScene* gS)
 {
 	//Cámara
@@ -22,7 +18,7 @@ Scene::Scene(PxPhysics* gP, PxScene* gS)
 	camera = GetCamera();
 	camera->setPosition(physx::PxVec3(0, 1, 0));
 
-	//Generadores de fuerza
+	//Generadores de fuerza para las partículas
 	registry = ParticleForceRegistry::instance();
 	forcesPS = new ParticleSystem(Vector3(0, 40, 0), Vector3(0, 1, 0));
 	fireworkPS = new ParticleSystem(Vector3(0, 40, 0), Vector3(0, 1, 0));
@@ -31,24 +27,19 @@ Scene::Scene(PxPhysics* gP, PxScene* gS)
 
 	gGenerator = new GravityGenerator(Vector3(10, 80, 0), Vector3(0, -98, 0));
 	dGenerator = new ParticleDragGenerator(Vector3(10, 100, 0), 1, 0);
-	//tGenerator = new TorbellinoGenerator(Vector3(0, 50, 0), 5, 2, 0, 1000);
-	//if (tGenerator) forcesPS->addForceGenerator(tGenerator);
 	
 	if (dGenerator) {
 		forcesPS->addForceGenerator(dGenerator);
-		//fireworkPS->addForceGenerator(dGenerator);
 	}
 	if (gGenerator) {
 		forcesPS->addForceGenerator(gGenerator);
-		//fireworkPS->addForceGenerator(gGenerator);
 	}
 
-
+	//Suelo del nivel
 	ground = gPhysics->createRigidStatic(PxTransform(0, 0, 0));
 	PxShape* forma = CreateShape(PxBoxGeometry(500, 0.1, 500));
 	ground->attachShape(*forma);
 	gScene->addActor(*ground);
-	ground->setRBType(RBType::RB_Ground);
 	RenderItem* item = new RenderItem(forma, ground, { 0, 1, 0.25, 1 });
 
 	//Catapulta
@@ -83,126 +74,12 @@ Scene::Scene(PxPhysics* gP, PxScene* gS)
 	registry->addRegistry(sGenerator, springParticle);
 	registry->addRegistry(sGenerator2, springParticle);
 
-	createLevel(1);
-
-	
-
-#ifndef WATER
-	//Suelo
-	//ground = new RenderItem(CreateShape(physx::PxBoxGeometry(5000, 1, 5000)), Vector4(0, 1, 0.25, 1));
-#endif // !WATER
-#ifdef WATER
-	ground = new RenderItem(CreateShape(physx::PxBoxGeometry(5000, 0.1, 5000)), Vector4(0, 1, 1, 1));
-	
-#endif // WATER
-
-	/*fireworkPS = new ParticleSystem(Vector3(0, 40, 0), Vector3(0, 1, 0));
-	pSystem.push_back(fireworkPS);
-
-	forcesPS = new ParticleSystem(Vector3(0, 40, 0), Vector3(0, 1, 0));
-	pSystem.push_back(forcesPS);
-
-	registry = ParticleForceRegistry::instance();
-	gGenerator = new GravityGenerator(Vector3(10, 80, 0), Vector3(0,-98,0));
-	dGenerator = new ParticleDragGenerator(Vector3(10, 100, 0), 1, 0);
-	tGenerator = new TorbellinoGenerator(Vector3(0, 50, 0),5, 2, 0, 1000);
-	
-	/*particleInfo newInfo = {Vector3(0,0,0), Vector3(0,1,0), 0.98, 50, 1000,0.5, particleType::pT_custom,Vector4(0.15f,0.15f,0.2f,1), CreateShape(physx::PxSphereGeometry(1)), false, 0};
-	auto forcesParticleGenerator = new GaussianParticleGenerator(pSystem[1], "GFuerzas", Vector3(50, 80, 0), newInfo, 5, 1, false);
-	forcesPS->addGenerator(forcesParticleGenerator);
-
-	particleInfo newInfo2 = { Vector3(0,0,0), Vector3(0,1,0), 0.98, 50, 1000,0.5, particleType::pT_custom,Vector4(1,1,1,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
-	auto forcesParticleGenerator2 = new GaussianParticleGenerator(pSystem[1], "GFuerzas2", Vector3(50, 80, 0), newInfo2, 5, 1, false);
-	forcesPS->addGenerator(forcesParticleGenerator2);
-	
-	if (tGenerator) forcesPS->addForceGenerator(tGenerator);
-	if (dGenerator) forcesPS->addForceGenerator(dGenerator);
-	if (gGenerator) forcesPS->addForceGenerator(gGenerator);
-	*/
-#ifdef WATER
-	if (gGenerator) {
-		fGenerator = new FlotationForceGenerator(Vector3(0, 0, 0), 1000, gGenerator->getGravity().y);
-		forcesPS->addForceGenerator(fGenerator);
-	}
-#endif // WATER
-
-
-#ifdef MSTATIC
-	particleInfo SSInfo2 = { camera->getEye() + (camera->getDir() * 15), Vector3(0,1,0), 0.98, 50, 1000,0, particleType::pT_custom,Vector4(0,1,0,1), CreateShape(physx::PxBoxGeometry(1, 1, 1)), false, 0};
-	Particle* p = new Particle(SSInfo2);
-
-	particleInfo SpringInfo = { camera->getEye() + (camera->getDir() * 10), Vector3(0,1,0), 0.98, 50, 1000,1, particleType::pT_custom,Vector4(1,1,0,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
-	Particle* p2 = new Particle(SpringInfo);
-	particlesList.push_back(p2);
-	sGenerator = new SpringForceGenerator(p, 8, 0.5);
-	if (gGenerator) registry->addRegistry(gGenerator, p2);
-	if (dGenerator) registry->addRegistry(dGenerator,p2);
-	registry->addRegistry(sGenerator, p2);
-#endif
-#ifdef MMOVIL
-	particleInfo SSInfo2 = { camera->getEye() + (camera->getDir() * 15), Vector3(0,1,0), 0.98, 50, 1000,1, particleType::pT_custom,Vector4(0,1,0,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
-	Particle* p = new Particle(SSInfo2);
-	particlesList.push_back(p);
-	particleInfo SpringInfo = { camera->getEye() + (camera->getDir() * 10), Vector3(0,1,0), 0.98, 50, 1000,1, particleType::pT_custom,Vector4(1,1,0,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
-	Particle* p2 = new Particle(SpringInfo);
-	particlesList.push_back(p2);
-	if (dGenerator) {
-		registry->addRegistry(dGenerator, p2);
-		registry->addRegistry(dGenerator, p);
-	}
-
-	/*sGenerator = new SpringForceGenerator(p, 8, 0.5);
-	SpringForceGenerator * sGenerator2 = new SpringForceGenerator(p2, 8, 0.5);
-	registry->addRegistry(sGenerator, p2);
-	registry->addRegistry(sGenerator2, p);*/
-	ElasticBandForceGenerator* eBGenerator = new ElasticBandForceGenerator(p, 8, 10);
-	ElasticBandForceGenerator* eBGenerator2 = new ElasticBandForceGenerator(p2, 8, 10);
-	registry->addRegistry(eBGenerator, p2);
-	registry->addRegistry(eBGenerator2, p);
-#endif
-#ifdef SLINKY
-	Vector3 spawnPos = camera->getEye() + (camera->getDir() * 15) +Vector3(0,15,0);
-	float separation = 15;
-	particleInfo slinkyPInfo1 = { spawnPos, Vector3(0,1,0), 0.98, 50, 1000,0.2,particleType::pT_custom,Vector4(1,0,0,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
-	Particle* p = new Particle(slinkyPInfo1);
-	particlesList.push_back(p);
-	particleInfo slinkyPInfo2 = { spawnPos - Vector3(0, -separation, 0), Vector3(0,1,0), 0.98, 50, 1000,0.2, particleType::pT_custom,Vector4(1,1,0,1), CreateShape(physx::PxSphereGeometry(1)), false, 0};
-	Particle* p2 = new Particle(slinkyPInfo2);
-	particlesList.push_back(p2);
-	particleInfo slinkyPInfo3 = { spawnPos - Vector3(0, -2*separation, 0), Vector3(0,1,0), 0.98, 50, 1000,0.2, particleType::pT_custom,Vector4(0,1,0,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
-	Particle* p3 = new Particle(slinkyPInfo3);
-	particlesList.push_back(p3);
-	particleInfo slinkyPInfo4 = { spawnPos - Vector3(0, -3 * separation, 0), Vector3(0,1,0), 0.98, 50, 1000,0.2, particleType::pT_custom,Vector4(0,1,1,1), CreateShape(physx::PxSphereGeometry(1)), false, 0 };
-	Particle* p4 = new Particle(slinkyPInfo4);
-	particlesList.push_back(p4);
-	if (dGenerator) {
-		registry->addRegistry(dGenerator, p2);
-		registry->addRegistry(dGenerator, p);
-		registry->addRegistry(dGenerator, p3);
-		registry->addRegistry(dGenerator, p4);
-	}
-	if (gGenerator) {
-		registry->addRegistry(gGenerator, p2);
-		registry->addRegistry(gGenerator, p);
-		registry->addRegistry(gGenerator, p3);
-		registry->addRegistry(gGenerator, p4);
-	}
-	SpringForceGenerator* sGenerator1 = new SpringForceGenerator(p, 8, 0.5);
-	SpringForceGenerator* sGenerator2 = new SpringForceGenerator(p2, 8, 0.5);
-	SpringForceGenerator* sGenerator3 = new SpringForceGenerator(p3, 8, 0.5);
-	SpringForceGenerator* sGenerator4 = new SpringForceGenerator(p4, 8, 0.5);
-	registry->addRegistry(sGenerator1, p2);
-	registry->addRegistry(sGenerator2, p);
-	registry->addRegistry(sGenerator2, p3);
-	registry->addRegistry(sGenerator3, p2);
-	registry->addRegistry(sGenerator3, p4);
-	registry->addRegistry(sGenerator4, p3);
-	
-#endif
+	//Generación del nivel
+	createLevel(CURRENT_LEVEL);
 }	
 
 
-Scene::~Scene()
+Scene::~Scene() //Borrado de todas las entidades de la escena
 {
 	for (Particle* p : particlesList) {
 		delete p;
@@ -214,12 +91,11 @@ Scene::~Scene()
 	for (PxRigidBody* rb : rigidBodyList) {
 		if(rb->isReleasable())  rb->release();
 	}
-	//ground->release();
-	//catapulta1->release();
-	//catapulta2->release();
+	bullets.clear();
+	enemies.clear();
 }
 
-void Scene::keyPress(unsigned char key)
+void Scene::keyPress(unsigned char key)//Input de teclado, ver código de la cámara para más información
 {
 	switch(key){
 		case 'a': {
@@ -230,35 +106,30 @@ void Scene::keyPress(unsigned char key)
 			GetCamera()->move(-1);
 			break;
 		}
-		case ' ':
-		{
-			
-		}
 	}
 }
 
-void Scene::mousePress(int button, int state)
+void Scene::mousePress(int button, int state) //Input del ratón
 {
 	if (button == 0) {
 		attackPressed = !state;
-		if (attackPressed) {
+		if (attackPressed) { //Si se pulsa el clic, empieza un contador que calcula la intensidad, y se crea un generador de partículas para la trayectoria
 			startAttackTime = currentTime;
 			particleInfo trayectoryPInfo = { springParticle->getPos(), {0,-1,0}, 0.98, 0.5, 1000,0.5, particleType::pT_custom,Vector4(0,0,1,1), CreateShape(physx::PxSphereGeometry(0.03)), false, 0};
 			trayectoryGenerator = new GaussianParticleGenerator(forcesPS, "Trayectoria", camera->getEye() + camera->getDir() * 2, trayectoryPInfo, 0.05, 1);
 			forcesPS->addGenerator(trayectoryGenerator);
 		}
-		else {
+		else { //Si se suelta, se destruye el generador, y se dispara
 			trayectoryGenerator->forceDestroy();
-
 			display_text = "";
 			shoot(intensidad);
 		}
 	}
 }
 
-void Scene::shoot(float intensity)
+void Scene::shoot(float intensity) //Método que construye la bola
 {
-	if (numDisparos <= 0) {
+	if (numDisparos <= 0) { //Hay un máximo de disparos por nivel
 		return;
 	}
 	numDisparos--;
@@ -270,14 +141,12 @@ void Scene::shoot(float intensity)
 	RenderItem* e1 = new RenderItem(b, bola, { 0.5,0.5, 0.5, 1 });
 	rigidBodyList.push_back(bola);
 	bola->setMass(10);
-	bola->addForce(camera->getDir() * 85000 * intensity);
-	bola->setRBType(RBType::RB_Projectile);
-	bola->canInteractCollisions = true;
-
-	if(numDisparos <= 0) defeatTimer = currentTime;
+	bola->addForce(camera->getDir() * 85000 * intensity); 
+	bullets[bola] = true;
+	if(numDisparos <= 0) defeatTimer = currentTime; //En caso de que no queden más bolas, empieza el temporizador de derrota
 }
 
-void Scene::levelCompleted()
+void Scene::levelCompleted() //En caso de ganar se crean 2 fuegos artificiales
 {
 	particleInfo fInfo = { GetCamera()->getEye() + camera->getDir() * 10,Vector3(0,5,0), 0.98, 1, 1000,1, particleType::pT_custom,Vector4(1,0,1,1), CreateShape(physx::PxSphereGeometry(0.05)), true, 50 };
 	particlesList.push_back(new Firework(fInfo, fireworkPS));
@@ -286,15 +155,17 @@ void Scene::levelCompleted()
 	end_text = "VICTORIA";
 }
 
-void Scene::createLevel(int lvl)
+void Scene::createLevel(int lvl) //Creador de los niveles
 {
 	switch (lvl) {
 	case 1: level1(); generateTrees(100); break;
+	case 2: level2(); generateTrees(70); break;
 		default: break;
 	}
+	numEnemies = enemies.size();
 }
 
-void Scene::level1()
+void Scene::level1() //Generador del nivel 1
 {
 	numDisparos = 3;
 	bulletCounter_text = to_string(numDisparos);
@@ -348,27 +219,89 @@ void Scene::level1()
 	RenderItem* e1 = new RenderItem(e, enemigo1, { 1,0, 0, 1 });
 	enemigo1->setMass(5);
 	enemigo1->setMassSpaceInertiaTensor({ 0,0,0 });
-	enemigo1->setRBType(RBType::RB_Enemy);
+	enemies[enemigo1] = true;
 	rigidBodyList.push_back(enemigo1);
-	enemigo1->canInteractCollisions = true;
 }
 
-void Scene::generateTrees(int num)
+void Scene::level2() //Generador del nivel 2
 {
+	numDisparos = 4;
+	bulletCounter_text = to_string(numDisparos);
+	PxTransform spawnPos(camera->getEye() + camera->getDir() * 35);
+	spawnPos.p.y = 0;
+
+	PxRigidDynamic* pilar1 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x - 2, 2, spawnPos.p.z));
+	PxShape* c1 = CreateShape(PxBoxGeometry(0.4, 1.5, 0.4));
+	pilar1->attachShape(*c1);
+	gScene->addActor(*pilar1);
+	RenderItem* r1 = new RenderItem(c1, pilar1, { 1,1, 1, 1 });
+	pilar1->setMass(30);
+	rigidBodyList.push_back(pilar1);
+
+
+	PxRigidDynamic* suelo1 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x-2, 4.5, spawnPos.p.z));
+	PxShape* s = CreateShape(PxBoxGeometry(2, 0.1, 2));
+	suelo1->attachShape(*s);
+	gScene->addActor(*suelo1);
+	RenderItem* s1 = new RenderItem(s, suelo1, { 1,1, 1, 1 });
+	suelo1->setMass(15);
+	rigidBodyList.push_back(suelo1);
+
+	PxRigidDynamic* enemigo1 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x-2, 5.5, spawnPos.p.z));
+	PxShape* e = CreateShape(PxBoxGeometry(0.5, 0.5, 0.5));
+	enemigo1->attachShape(*e);
+	gScene->addActor(*enemigo1);
+	RenderItem* e1 = new RenderItem(e, enemigo1, { 1,0, 0, 1 });
+	enemigo1->setMass(5);
+	enemigo1->setMassSpaceInertiaTensor({ 0,0,0 });
+	enemies[enemigo1] = true;
+	rigidBodyList.push_back(enemigo1);
+
+	PxRigidDynamic* pilar2 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x -3, 3.5, spawnPos.p.z + 10));
+	PxShape* c2 = CreateShape(PxBoxGeometry(0.4, 2.5, 0.4));
+	pilar2->attachShape(*c2);
+	gScene->addActor(*pilar2);
+	RenderItem* r2 = new RenderItem(c2, pilar2, { 1,1, 1, 1 });
+	pilar2->setMass(30);
+	rigidBodyList.push_back(pilar2);
+
+
+	PxRigidDynamic* suelo2 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x - 3, 5.5, spawnPos.p.z + 10));
+	PxShape* s2 = CreateShape(PxBoxGeometry(2, 0.1, 2));
+	suelo2->attachShape(*s2);
+	gScene->addActor(*suelo2);
+	RenderItem* s3 = new RenderItem(s2, suelo2, { 1,1, 1, 1 });
+	suelo2->setMass(15);
+	rigidBodyList.push_back(suelo2);
+
+	PxRigidDynamic* enemigo2 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x - 3, 6.5, spawnPos.p.z + 10));
+	PxShape* e2 = CreateShape(PxBoxGeometry(0.5, 0.5, 0.5));
+	enemigo2->attachShape(*e2);
+	gScene->addActor(*enemigo2);
+	RenderItem* e3 = new RenderItem(e2, enemigo2, { 1,0, 0, 1 });
+	enemigo2->setMass(5);
+	enemigo2->setMassSpaceInertiaTensor({ 0,0,0 });
+	enemies[enemigo2] = true;
+	rigidBodyList.push_back(enemigo2);
+}
+
+void Scene::generateTrees(int num) //Generador de áboles (estético)
+{
+	// Usa un generador uniforme para colocar los árboles en el mapa
 	ParticleSystem* treePS = new ParticleSystem(Vector3(0, 0, 0), Vector3(200, 3, 200));
 	pSystem.push_back(treePS);
 	particleInfo treeModel = { Vector3(0,1,0), Vector3(0,0,0), 0.98, -1, 1000,0, particleType::pT_custom,Vector4(0,1,0,1), CreateShape(physx::PxSphereGeometry(2)), false, 0};
 	UniformTreeGenerator* treeGenerator = new UniformTreeGenerator(treePS, "GeneradorArboles", Vector3(-100, 2,-100), 300, 0, treeModel, num);
 	treePS->addGenerator(treeGenerator);
 
-	particleInfo sunModel = { Vector3(150,50,150), Vector3(0,0,0), 0.98, -1, 1000,0, particleType::pT_custom,Vector4(1,1,0,1), CreateShape(physx::PxSphereGeometry(20)), false, 0 };
+	particleInfo sunModel = { Vector3(150,150,100), Vector3(0,0,0), 0.98, -1, 1000,0, particleType::pT_custom,Vector4(1,1,0,1), CreateShape(physx::PxSphereGeometry(20)), false, 0 };
 	Particle* sun = new Particle(sunModel);
 	particlesList.push_back(sun);
 }
 
+
 void Scene::integrate(float dt)
 {
-	//cout << springParticle->getPos().x << ' ' << springParticle->getPos().y << ' ' << springParticle->getPos().z << '\n';
 	currentTime += dt;
 	list<Particle*>::iterator it = particlesList.begin();
 	Particle* p;
@@ -389,40 +322,56 @@ void Scene::integrate(float dt)
 	}
 	particlesToDelete.clear();
 
-	if (attackPressed) {
+	if (attackPressed) { 
 		intensidad = PxClamp((currentTime - startAttackTime), 0.4f, maxAttackChargeTime) / maxAttackChargeTime;
 		display_text = "";
 		for (int c = 0; c < intensidad * 10; ++c) {
-			display_text += "/";
+			display_text += "/"; //Se muestra en la pantalla la intensidad de lanzamiento
 		}
-		springParticle->setPosition(camera->getEye() + camera->getDir()*1.2 - PxVec3(0, 0.43, 0));
-		trayectoryGenerator->setPosition(springParticle->getPos());
+		springParticle->setPosition(camera->getEye() + camera->getDir()*1.2 - PxVec3(0, 0.43, 0)); //Se estira el muelle de la catapulta
+		trayectoryGenerator->setPosition(springParticle->getPos()); //Se ajusta la posición del generador de trayectoria para que esté en frente del jugador
 		trayectoryGenerator->setParticleVelocity(camera->getDir() * intensidad * 200);
 	}
-	if (defeatTimer != -1 && currentTime - defeatTimer > 5) end_text = "DERROTA";
+	if (defeatTimer != -1 && currentTime - defeatTimer > 5) end_text = "DERROTA"; //Si después de usar la última bala, pasan 5 segundos, pierdes
 
+	//Se ajustan los objetos de la catapulta para que se muevan con el jugador
 	auto rightVec = camera->getDir().cross({ 0,1,0 });
 	catapulta1->setGlobalPose(PxTransform(GetCamera()->getEye() + GetCamera()->getDir() * 1.5 + rightVec * 0.7 - PxVec3(0, 0.3, 0)));
 	catapulta2->setGlobalPose(PxTransform(GetCamera()->getEye() + GetCamera()->getDir() * 1.5 + -rightVec * 0.7 - PxVec3(0, 0.3, 0)));
 	spring1->setPosition(GetCamera()->getEye() + GetCamera()->getDir() * 1.5 + rightVec * 0.7 - PxVec3(0, 0.1, 0));
 	spring2->setPosition(GetCamera()->getEye() + GetCamera()->getDir() * 1.5 + -rightVec * 0.7 - PxVec3(0, 0.1, 0));
+
+	if (CURRENT_LEVEL == 2) { //En el nivel 2 se aplica una fuerza de viento a las balas
+		windForce(-((rand() % 20)+40));
+	}
 }
 
-void Scene::generateExplosion(Vector3 origin)
+void Scene::generateExplosion(Vector3 origin) //Generador de explosiones para RB
 {
 	for (auto rb : rigidBodyList) {
 		if (rb != nullptr) {
-			float distancia = (rb->getGlobalPose().p - origin).magnitude();
-			if (distancia <= 200) {
+			float distancia = (rb->getGlobalPose().p - origin).magnitude(); 
+			if (distancia <= 200) { //Comprueba que la distancia no es superior al alcance
 				Vector3 posiciones(rb->getGlobalPose().p.x - origin.x, rb->getGlobalPose().p.y - origin.y, rb->getGlobalPose().p.z - origin.z);
-				Vector3 explosionForce((50000 / pow(distancia, 2.f)) * posiciones);
+				Vector3 explosionForce((40000 / pow(distancia, 2.f)) * posiciones);
 				rb->addForce(explosionForce);
 			}
 		}
 	}
 }
 
-void Scene::enemyDead()
+void Scene::windForce(float intensity) //Generador de fuerza del viento para RB
+{
+	for (auto rb : rigidBodyList) {
+		if ((bullets.find(rb))!= bullets.end()) { //Se aplica solo a las bolas de cañon (comprobación constante)
+			Vector3 windForce(0, 0, intensity);
+			rb->addForce(windForce);
+		}
+	}
+}
+
+
+void Scene::enemyDead() //Comprabdor de que quedan enemigos vivos
 {
 	numEnemies--;
 	if (numEnemies <= 0) levelCompleted();
