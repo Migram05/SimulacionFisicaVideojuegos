@@ -20,6 +20,10 @@ list<Particle*> UniformTreeGenerator::generateParticles()
 		Vector3 offsetPos = Vector3(distribution(generator), 0, distribution(generator));
 		pModel.origin = position + offsetPos + Vector3(0,2,0);
 		treeModel.origin = position + offsetPos;
+		float colorVar = rand() % 100;
+		pModel.color = { 0, (colorVar+10) / 100, 0,1 };
+		float sizeRand = rand() % 200;
+		pModel.geometry = CreateShape(physx::PxSphereGeometry(1.5 + (sizeRand / 100)));
 		Particle* p = new Particle(pModel, this);
 		Particle* p2 = new Particle(treeModel, this);
 		pL.push_back(p);

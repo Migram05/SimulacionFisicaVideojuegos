@@ -62,8 +62,9 @@ void renderActors(physx::PxRigidActor** actors, const physx::PxU32 numActors, bo
 void finishRender();
 void drawText(const std::string& text, int x, int y);
 }
-#define WIN_WIDTH 500
-#define WIN_HEIGHT 500
+
+#define WIN_WIDTH 1420
+#define WIN_HEIGHT 800
 
 #define MAX_NUM_ACTOR_SHAPES 128
 

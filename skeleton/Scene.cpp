@@ -140,7 +140,7 @@ void Scene::shoot(float intensity) //Método que construye la bola
 	gScene->addActor(*bola);
 	RenderItem* e1 = new RenderItem(b, bola, { 0.5,0.5, 0.5, 1 });
 	rigidBodyList.push_back(bola);
-	bola->setMass(10);
+	bola->setMass(15);
 	bola->addForce(camera->getDir() * 85000 * intensity); 
 	bullets[bola] = true;
 	if(numDisparos <= 0) defeatTimer = currentTime; //En caso de que no queden más bolas, empieza el temporizador de derrota
@@ -158,8 +158,8 @@ void Scene::levelCompleted() //En caso de ganar se crean 2 fuegos artificiales
 void Scene::createLevel(int lvl) //Creador de los niveles
 {
 	switch (lvl) {
-	case 1: level1(); generateTrees(100); break;
-	case 2: level2(); generateTrees(70); break;
+	case 1: level1(); generateTrees(500); break;
+	case 2: level2(); generateTrees(200); break;
 		default: break;
 	}
 	numEnemies = enemies.size();
@@ -209,7 +209,7 @@ void Scene::level1() //Generador del nivel 1
 	suelo1->attachShape(*s);
 	gScene->addActor(*suelo1);
 	RenderItem* s1 = new RenderItem(s, suelo1, { 1,1, 1, 1 });
-	suelo1->setMass(5);
+	suelo1->setMass(15);
 	rigidBodyList.push_back(suelo1);
 
 	PxRigidDynamic* enemigo1 = gPhysics->createRigidDynamic(PxTransform(spawnPos.p.x, 4, spawnPos.p.z));
@@ -218,7 +218,7 @@ void Scene::level1() //Generador del nivel 1
 	gScene->addActor(*enemigo1);
 	RenderItem* e1 = new RenderItem(e, enemigo1, { 1,0, 0, 1 });
 	enemigo1->setMass(5);
-	enemigo1->setMassSpaceInertiaTensor({ 0,0,0 });
+	enemigo1->setMassSpaceInertiaTensor({ 0,0,0 }); //Tensor de inercia que hace que el enemigo no pueda rotar, haciendo que sea más dificil derribarlo
 	enemies[enemigo1] = true;
 	rigidBodyList.push_back(enemigo1);
 }
@@ -291,7 +291,7 @@ void Scene::generateTrees(int num) //Generador de áboles (estético)
 	ParticleSystem* treePS = new ParticleSystem(Vector3(0, 0, 0), Vector3(200, 3, 200));
 	pSystem.push_back(treePS);
 	particleInfo treeModel = { Vector3(0,1,0), Vector3(0,0,0), 0.98, -1, 1000,0, particleType::pT_custom,Vector4(0,1,0,1), CreateShape(physx::PxSphereGeometry(2)), false, 0};
-	UniformTreeGenerator* treeGenerator = new UniformTreeGenerator(treePS, "GeneradorArboles", Vector3(-100, 2,-100), 300, 0, treeModel, num);
+	UniformTreeGenerator* treeGenerator = new UniformTreeGenerator(treePS, "GeneradorArboles", Vector3(-100, 2,-100), 500, 0, treeModel, num);
 	treePS->addGenerator(treeGenerator);
 
 	particleInfo sunModel = { Vector3(150,150,100), Vector3(0,0,0), 0.98, -1, 1000,0, particleType::pT_custom,Vector4(1,1,0,1), CreateShape(physx::PxSphereGeometry(20)), false, 0 };
@@ -351,9 +351,9 @@ void Scene::generateExplosion(Vector3 origin) //Generador de explosiones para RB
 	for (auto rb : rigidBodyList) {
 		if (rb != nullptr) {
 			float distancia = (rb->getGlobalPose().p - origin).magnitude(); 
-			if (distancia <= 200) { //Comprueba que la distancia no es superior al alcance
-				Vector3 posiciones(rb->getGlobalPose().p.x - origin.x, rb->getGlobalPose().p.y - origin.y, rb->getGlobalPose().p.z - origin.z);
-				Vector3 explosionForce((40000 / pow(distancia, 2.f)) * posiciones);
+			if (distancia <= 10) { //Comprueba que la distancia no es superior al alcance
+				Vector3 posiciones = rb->getGlobalPose().p - origin;
+				Vector3 explosionForce((10000 / pow(distancia, 2.f)) * posiciones);
 				rb->addForce(explosionForce);
 			}
 		}
@@ -363,7 +363,7 @@ void Scene::generateExplosion(Vector3 origin) //Generador de explosiones para RB
 void Scene::windForce(float intensity) //Generador de fuerza del viento para RB
 {
 	for (auto rb : rigidBodyList) {
-		if ((bullets.find(rb))!= bullets.end()) { //Se aplica solo a las bolas de cañon (comprobación constante)
+		if ((bullets.find(rb))!= bullets.end()) { //Se aplica solo a las bolas de cañon (complejidad constante)
 			Vector3 windForce(0, 0, intensity);
 			rb->addForce(windForce);
 		}
