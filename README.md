@@ -1,8 +1,16 @@
 # SimulacionFisicaVideojuegos
-Repositorio de las prácticas de la asignatura de Simulación Física de Videojuegos
+## Proyecto final de Miguel Ramírez
 
-En la carpeta skeleton estará vuestro código fuente
+### Niveles
+El juego tiene 2 posibles niveles, siendo el segundo más difícil que el primero, para cambiar el nivel hay que modificar la variable "CURRENT_LEVEL" en el archivo "Scene.h" (los valores posibles son 1 y 2)
 
-Necesitaréis además descomprimir el archivo que se indica a continuación en la raíz del repositorio:
+### Controles
+Para rotar la catapulta hacia la izquierda y derecha usa las teclas "A" y "D" respectivamente
+Para cargar un disparo, mantén pulsado el botón izquierdo del ratón.
+Mientras el botón izquierdo del ratón esté pulsado se irá aumentando la fuerza del lanzamiento del proyectil, puedes ver la cantidad de fuerza representada por una barra de progreso en la parte inferior izquierda de la pantalla, junto a la 
+barra aparece el contador de munición que te queda.
+Cuando quieras disparar, suelta el botón del ratón.
 
-Carpetas bin y common https://ucomplutense-my.sharepoint.com/:u:/g/personal/davalejo_ucm_es/EZcsdyIoqTFOrF4hdfkVYk0BJZ9IycJ3QqXQFwaXVrlSKg?e=pfs6IO
+### Objetivo
+Derrota a todos los enemigos (los cubos rojos) antes de quedarte sin munición.
+Para reiniciar el nivel, hay que cerrar la ventana y volver a ejecutar el proyecto.
